@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%278%27 fill=%27%235746c8%27/%3E%3Ctext x=%2710%27 y=%2723%27 fill=%27white%27 font-size=%2722%27%3EP%3C/text%3E%3C/svg%3E">
+<title>项目创建 · PMSpec 演示原型</title>
+<!-- @pmspec:theme:start -->
+<style>
+:root {
+  color-scheme: light;
+  --canvas: #eceef2;
+  --surface: #ffffff;
+  --muted: #f5f6f9;
+  --text: #202434;
+  --text-muted: #5e6678;
+  --border: #d8dce5;
+  --primary: #5746c8;
+  --primary-hover: #4434ac;
+  --primary-soft: #eeeafd;
+  --on-primary: #ffffff;
+  --danger: #b42336;
+  --danger-soft: #fff0f1;
+  --focus: #7866e5;
+  --radius: 12px;
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+</style>
+<!-- @pmspec:theme:end -->
+<!-- @pmspec:shared:start -->
+<style>
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; padding: 32px 24px; background: var(--canvas); color: var(--text); font: 14px/1.65 var(--font); }
+button, input, select, textarea { font: inherit; }
+button, a, input { -webkit-tap-highlight-color: transparent; }
+button { cursor: pointer; }
+a { color: var(--primary); text-underline-offset: 3px; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+[hidden] { display: none !important; }
+h1, h2, h3, p { margin-top: 0; }
+h1 { font-size: 26px; letter-spacing: -.5px; }
+h2 { font-size: 21px; }
+h3 { font-size: 16px; }
+.page-head { margin: 0 0 28px; }
+.eyebrow { color: var(--primary); font-size: 12px; font-weight: 700; letter-spacing: 1px; }
+.muted { color: var(--text-muted); }
+.proto-layout { display: flex; gap: 24px; align-items: flex-start; }
+.toc-sidebar { flex: 0 0 200px; position: sticky; top: 24px; padding: 20px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
+.toc-sidebar a { display: block; margin-top: 14px; text-decoration: none; }
+.sections-col { flex: 1; min-width: 0; }
+.proto-stack { scroll-margin-top: 24px; margin-bottom: 48px; }
+.section-label { font-weight: 700; font-size: 16px; margin-bottom: 12px; }
+.proto-with-prd { display: grid; grid-template-columns: minmax(620px, 1fr) 320px; gap: 24px; align-items: start; }
+.app-window { height: 650px; overflow: hidden; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: 0 12px 36px #20243412; }
+.app-bar { height: 48px; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; border-bottom: 1px solid var(--border); background: var(--muted); }
+.app-bar span { font-size: 12px; color: var(--text-muted); }
+.app-body { position: relative; display: flex; height: calc(100% - 48px); }
+.app-sidebar { flex: 0 0 140px; padding: 24px 16px; border-right: 1px solid var(--border); background: var(--muted); }
+.app-sidebar a, .nav-current { display: block; border-radius: 8px; padding: 8px 12px; text-decoration: none; }
+.nav-current { color: var(--primary); background: var(--primary-soft); font-weight: 600; }
+.app-main { padding: 32px; flex: 1; min-width: 0; overflow: auto; }
+.toolbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 24px; }
+.toolbar h2 { margin: 0; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 9px 16px; border: 1px solid var(--border); border-radius: 8px; color: var(--text); background: var(--surface); text-decoration: none; font-weight: 600; }
+.btn:hover { background: var(--muted); }
+.btn-primary { background: var(--primary); color: var(--on-primary); border-color: var(--primary); }
+.btn-primary:hover { background: var(--primary-hover); }
+.btn-danger { color: var(--danger); background: var(--danger-soft); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.card { border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; background: var(--surface); }
+.item-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.item-row p { margin: 6px 0 0; }
+.badge { background: var(--primary-soft); color: var(--primary); padding: 3px 9px; border-radius: 6px; font-size: 12px; }
+.empty { padding: 64px 16px; text-align: center; }
+.prd-panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; max-height: 650px; overflow: auto; }
+.prd-panel h3 { margin-bottom: 16px; }
+.prd-panel ul { padding-left: 19px; margin: 0; }
+.prd-panel li { margin-bottom: 14px; }
+.prd-panel li:last-child { margin-bottom: 0; }
+.review-tabs { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
+.review-tabs > span { font-size: 12px; color: var(--text-muted); margin-right: 4px; }
+.review-tab { padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border); background: var(--surface); color: var(--text); }
+.review-tab[aria-selected="true"] { background: var(--primary); color: var(--on-primary); border-color: var(--primary); }
+.overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: #20243459; padding: 28px; }
+.dialog { width: 420px; max-width: 100%; max-height: 100%; overflow: auto; background: var(--surface); padding: 28px; border-radius: var(--radius); box-shadow: 0 16px 48px #20243430; }
+.dialog-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 20px; }
+.dialog-head h3 { margin: 0; }
+.drawer { position: absolute; right: 0; top: 0; bottom: 0; width: min(380px, 80%); padding: 28px; background: var(--surface); box-shadow: -8px 0 32px #20243420; overflow: auto; }
+.field { margin-bottom: 20px; }
+.field label { display: block; font-weight: 600; margin-bottom: 8px; }
+.input { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; color: var(--text); background: var(--surface); }
+.input[aria-invalid="true"] { border-color: var(--danger); }
+.actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; }
+.error { margin: 8px 0 0; color: var(--danger); font-size: 13px; }
+.notice { padding: 12px 16px; margin-bottom: 20px; border-radius: 8px; color: var(--primary); background: var(--primary-soft); }
+@media (max-width: 1450px) {
+  .proto-with-prd { grid-template-columns: minmax(0, 1fr); }
+  .prd-panel { max-height: none; }
+}
+@media (max-width: 850px) {
+  body { padding: 20px 12px; }
+  .proto-layout { display: block; }
+  .toc-sidebar { position: static; margin-bottom: 24px; }
+  .app-sidebar { display: none; }
+  .app-main { padding: 24px 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
+</style>
+<!-- @pmspec:shared:end -->
+<!-- @pmspec:runtime:start -->
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('[data-review-tabs]').forEach((tabGroup) => {
+    const section = tabGroup.closest('.proto-stack');
+    const tabs = [...tabGroup.querySelectorAll('[role="tab"]')];
+    const panels = [...section.querySelectorAll('[data-review-panel]')];
+    function selectTab(selectedTab) {
+      tabs.forEach((tab) => {
+        const selected = tab === selectedTab;
+        tab.setAttribute('aria-selected', String(selected));
+        tab.tabIndex = selected ? 0 : -1;
+      });
+      panels.forEach((panel) => {
+        panel.hidden = panel.dataset.reviewPanel !== selectedTab.dataset.reviewState;
+      });
+    }
+    tabs.forEach((tab, index) => {
+      tab.addEventListener('click', () => selectTab(tab));
+      tab.addEventListener('keydown', (event) => {
+        let nextIndex;
+        if (event.key === 'ArrowRight') nextIndex = (index + 1) % tabs.length;
+        if (event.key === 'ArrowLeft') nextIndex = (index - 1 + tabs.length) % tabs.length;
+        if (event.key === 'Home') nextIndex = 0;
+        if (event.key === 'End') nextIndex = tabs.length - 1;
+        if (nextIndex === undefined) return;
+        event.preventDefault();
+        selectTab(tabs[nextIndex]);
+        tabs[nextIndex].focus();
+      });
+    });
+    selectTab(tabs.find((tab) => tab.getAttribute('aria-selected') === 'true') || tabs[0]);
+  });
+});
+</script>
+<!-- @pmspec:runtime:end -->
+</head>
+<body>
+<header class="page-head"><p class="eyebrow">PMSPEC · INTERACTIVE EXAMPLE</p><h1>项目创建 · 演示原型</h1><p class="muted">仅示例数据，所有操作本地模拟，刷新重置。评审状态不属于产品功能；新弹窗与详情页均独立平铺。</p></header>
+<div class="proto-layout">
+<nav class="toc-sidebar" aria-label="页面索引"><strong>页面索引</strong><a href="#screen-list">01 · 项目列表</a><a href="#screen-create">02 · 新建弹窗</a><a href="#screen-detail">03 · 项目详情</a></nav>
+<main class="sections-col">
+<section class="proto-stack" id="screen-list" aria-labelledby="heading-list">
+<h2 class="section-label" id="heading-list">01 · 项目列表</h2>
+<div class="review-tabs" data-review-tabs><span>评审状态（非产品功能）</span><div role="tablist" aria-label="列表轻量状态"><button class="review-tab" role="tab" id="tab-default" aria-controls="panel-default" aria-selected="true" data-review-state="default">默认</button> <button class="review-tab" role="tab" id="tab-empty" aria-controls="panel-empty" aria-selected="false" tabindex="-1" data-review-state="empty">空态</button></div></div>
+<div class="proto-with-prd">
+<div class="app-window"><div class="app-bar"><strong>轻舟工作台</strong><span>网页原型 · 本地模拟</span></div><div class="app-body"><nav class="app-sidebar" aria-label="产品导航"><span class="nav-current">项目</span></nav><div class="app-main"><div class="toolbar"><h2>我的项目</h2><a class="btn btn-primary" href="#screen-create">新建项目</a></div><p class="notice" id="save-notice" role="status" hidden>已模拟保存，未连接真实服务。</p>
+<div id="panel-default" role="tabpanel" aria-labelledby="tab-default" data-review-panel="default"><div class="card item-row"><div><span class="badge">进行中</span><h3 data-project-name>品牌官网改版</h3><p class="muted">项目名称来自本地演示数据</p></div><a class="btn" href="#screen-detail">查看详情</a></div></div>
+<div id="panel-empty" role="tabpanel" aria-labelledby="tab-empty" data-review-panel="empty" hidden><div class="card empty"><h3>还没有项目</h3><p class="muted">创建第一个项目，开始整理需求。</p><a class="btn btn-primary" href="#screen-create">创建项目</a></div></div>
+</div></div></div>
+<aside class="prd-panel" aria-label="01 功能概览"><h3>功能概览</h3><ul><li><strong>项目列表</strong>：默认态展示本地示例项目名称与状态；点击「查看详情」前往独立展示的 03。</li><li><strong>新建项目</strong>：点击后前往独立展示的 02 新建弹窗。</li><li><strong>空态</strong>：无项目时展示空态说明与创建入口；评审子 Tab 只切换轻量展示状态，不删除演示数据。</li><li><strong>模拟保存结果</strong>：02 保存成功后，本页与 03 同步展示新名称并提示模拟保存；刷新后恢复初始数据。</li></ul></aside>
+</div></section>
+<section class="proto-stack" id="screen-create" aria-labelledby="heading-create">
+<h2 class="section-label" id="heading-create">02 · 新建弹窗（独立平铺）</h2>
+<div class="review-tabs"><label for="save-outcome">评审模拟结果（非产品功能）</label><select id="save-outcome"><option value="success">保存成功</option><option value="failure">保存失败</option></select></div>
+<div class="proto-with-prd">
+<div class="app-window"><div class="app-bar"><strong>轻舟工作台</strong><span>网页原型 · 本地模拟</span></div><div class="app-body"><div class="app-main" inert><h2>我的项目</h2><div class="card">项目列表作为弹窗底层上下文，仅作静态示意</div></div><div class="overlay"><div class="dialog" role="dialog" aria-labelledby="dialog-title"><div class="dialog-head"><h3 id="dialog-title">新建项目</h3><a class="btn" href="#screen-list" aria-label="关闭新建弹窗并返回列表">×</a></div><form id="project-form" novalidate><div class="field"><label for="project-name">项目名称</label><input class="input" id="project-name" name="project-name" placeholder="例如：移动端体验升级" autocomplete="off" aria-describedby="name-help name-error" aria-required="true"><p class="muted" id="name-help">去除首尾空格后，输入 1–20 个字符。</p><p class="error" id="name-error" role="alert" hidden></p></div><p class="notice">演示操作，不会创建真实项目。</p><div class="actions"><a class="btn" href="#screen-list">取消</a><button class="btn btn-primary" type="submit">保存</button></div></form></div></div></div></div>
+<aside class="prd-panel" aria-label="02 功能概览"><h3>功能概览</h3><ul><li><strong>新建弹窗</strong>：在列表背景上展示，默认可见，不需要先点击才能发现。</li><li><strong>项目名称</strong>：用户输入，去除首尾空格后须为 1–20 个 Unicode 码点；为空或超限时展示错误并保留输入。</li><li><strong>保存</strong>：校验通过且模拟结果为成功时，将输入名称同步至 01 与 03，切回列表默认态并前往 01。</li><li><strong>保存失败</strong>：模拟结果选择失败时，展示失败提示，保留输入，允许切回成功后重试。</li><li><strong>取消与关闭</strong>：不保存，清空未提交输入并前往 01。此图是独立平铺的弹窗展示，返回不移除本图。</li></ul></aside>
+</div></section>
+<section class="proto-stack" id="screen-detail" aria-labelledby="heading-detail">
+<h2 class="section-label" id="heading-detail">03 · 项目详情（独立平铺）</h2>
+<div class="proto-with-prd">
+<div class="app-window"><div class="app-bar"><strong>轻舟工作台</strong><span>网页原型 · 本地模拟</span></div><div class="app-body"><nav class="app-sidebar" aria-label="详情产品导航"><a href="#screen-list">项目</a></nav><div class="app-main"><a href="#screen-list">← 返回项目列表</a><h2 data-project-name>品牌官网改版</h2><div class="card"><h3>项目说明</h3><p>此页展示独立详情页。项目名称与列表保持同步，其余内容为静态示例。</p><span class="badge">进行中</span></div></div></div></div>
+<aside class="prd-panel" aria-label="03 功能概览"><h3>功能概览</h3><ul><li><strong>返回项目列表</strong>：点击前往 01。</li><li><strong>项目名称</strong>：展示当前演示项目名称，与 01 同步；刷新后恢复初始名称。</li><li><strong>项目说明</strong>：展示静态示例说明与进行中状态，不代表真实业务数据。</li></ul></aside>
+</div></section>
+</main></div>
+<script>
+const projectForm = document.querySelector('#project-form');
+const nameInput = document.querySelector('#project-name');
+const nameError = document.querySelector('#name-error');
+function resetForm() {
+  projectForm.reset();
+  nameError.hidden = true;
+  nameInput.removeAttribute('aria-invalid');
+}
+projectForm.addEventListener('submit', (event) => {
+  event.preventDefault();
+  const projectName = nameInput.value.trim();
+  const nameLength = Array.from(projectName).length;
+  let errorMessage = '';
+  if (nameLength < 1 || nameLength > 20) errorMessage = '请输入 1–20 个字符的项目名称。';
+  else if (document.querySelector('#save-outcome').value === 'failure') errorMessage = '模拟保存失败，请重试。输入已保留。';
+  nameError.hidden = !errorMessage;
+  nameError.textContent = errorMessage;
+  nameInput.setAttribute('aria-invalid', String(nameLength < 1 || nameLength > 20));
+  if (errorMessage) {
+    nameInput.focus();
+    return;
+  }
+  document.querySelectorAll('[data-project-name]').forEach((heading) => { heading.textContent = projectName; });
+  document.querySelector('#save-notice').hidden = false;
+  document.querySelector('#tab-default').click();
+  resetForm();
+  window.location.hash = 'screen-list';
+});
+document.querySelectorAll('#screen-create a[href="#screen-list"]').forEach((link) => {
+  link.addEventListener('click', resetForm);
+});
+</script>
+</body></html>
