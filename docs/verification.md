@@ -57,4 +57,4 @@ node tests/verify.mjs
 - Codex Agent TOML 用 Python 3.11 标准库 tomllib 解析，核对 name/description/developer_instructions 与共享审核清单路径。
 - `git diff --check` 通过；不新增依赖、不修改真实宿主配置、不运行其他宿主 CLI。
 
-**Not run：**真实 Claude Code/Codex 新会话技能发现、pmspec-review 安全引用、prototype-review 命名子 Agent 冒烟均未运行。当前是托管会话，工具列表并无新 Agent；不能以另一个 CLI 或全局凭据绕过其注册边界。因此结论是“部署流程已在隔离目录验证”，不是“真实宿主已可引用”。本次 init 推送到任务分支，未合入 main；README 初始化文本默认获取 main，须合入后才包含 init。审阅任务分支时可使用该分支的完整副本作为来源。
+**Not run：**真实 Claude Code/Codex 新会话技能发现、pmspec-review 安全引用、prototype-review 命名子 Agent 冒烟均未运行。当前是托管会话，工具列表并无新 Agent；不能以另一个 CLI 或全局凭据绕过其注册边界。因此结论是“部署流程已在隔离目录验证”，不是“真实宿主已可引用”。本次 init 已按用户授权合入 main；README 初始化文本可从 main 获取包含 init 的完整来源。合入不代表真实宿主运行时验证通过。
