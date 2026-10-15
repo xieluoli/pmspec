@@ -5,6 +5,8 @@ argument-hint: "[想法或需求描述]"
 disable-model-invocation: true
 ---
 
+> 宿主引用：Claude Code 使用 `/pmspec-explore`，Codex 使用 `$pmspec-explore`。下文 `$ARGUMENTS` 指用户调用时的参数；宿主不替换该变量时从自然语言读取，不把字面量当作需求名。阶段仅由用户显式选择，不自动执行。
+
 # PMSpec · Explore
 
 把一个想法收敛为用户明确认可、可以立项的需求。全程中文，一次只问一个问题。输入为 `$ARGUMENTS` 与当前对话中用户提供的需求资料；不要求先填模板。
@@ -55,6 +57,6 @@ disable-model-invocation: true
 - 待验证的假设与影响；没有则写“无”。
 - **推荐需求名**：简短、语义明确的 kebab-case；已有相关需求先判断是否沿用，避免重复立项。只推荐，不创建目录。
 
-请用户确认摘要。收到明确确认后，直接给含推荐名称的完整命令，例如 `/pmspec-propose simplify-checkout`，不要留下 `<需求名>` 占位让用户补。不自动调用下一技能。
+请用户确认摘要。收到明确确认后，直接给含推荐名称的完整命令，例如 `/pmspec-propose simplify-checkout`，Codex 应给 `$pmspec-propose simplify-checkout`，其他下一步同样遵循当前宿主语法。不要留下 `<需求名>` 占位让用户补。不自动调用下一技能。
 
 换会话继续时提醒携带共识摘要或获批准的需求来源，不能假定另一个 Agent 能看到聊天历史。成功标准是关键决策明确，不是问遍所有可能分支。

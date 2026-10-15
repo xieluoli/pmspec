@@ -7,7 +7,7 @@ PMSpec 重新组织为产品工作流，不是外部技能的调用包装层。�
 | [OpenSpec](https://github.com/Fission-AI/OpenSpec) | 阶段调用方式、change 目录与 proposal 核心章节 | CLI、schema、spec/design/tasks、研发实施与自动归档 |
 | [Superpowers Brainstorming](https://github.com/obra/superpowers) | 理解问题、一次一问、方案取舍、人工批准 | 研发架构流程、writing-plans 依赖与自动提交 |
 | [grill-me](https://github.com/mattpocock/skills/blob/main/docs/productivity/grill-me.md) | 按决策依赖追问、挑战假设 | 外部技能链、问尽全部分支才结束 |
-| 原有 jyopsx-explore 与 proto-gen（用户提供的参考） | 探索与立项分离、原型三段结构、产品旁注、独立审核 | 私有路径、研发产物、强制 macOS、外部 CLI 或主题服务 |
+| 用户提供的需求探索与原型制作实践 | 探索与立项分离、原型三段结构、产品旁注、独立审核 | 私有路径、研发产物、强制 macOS、外部 CLI 或主题服务 |
 
 本库正文与精简示例资产为本次重新编写，未整份复制参考仓库的代码、样式、模板或素材。未来引入第三方文件须核查其许可并保留所需声明；来源链接不等于取得复制授权。仓库许可尚待维护者选择，本次不擅自授予开源许可。
 

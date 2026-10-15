@@ -5,6 +5,8 @@ argument-hint: "[需求名]"
 disable-model-invocation: true
 ---
 
+> 宿主引用：Claude Code 使用 `/pmspec-apply`，Codex 使用 `$pmspec-apply`。下文 `$ARGUMENTS` 指用户调用时的参数；宿主不替换该变量时从自然语言读取，不把字面量当作需求名。阶段仅由用户显式选择，不自动执行。
+
 # PMSpec · Apply
 
 把获批准的产品需求具象化为高保真原型，中文交流。输入为 `$ARGUMENTS` 中的需求名；名称缺失或存在多个候选时询问，不猜。
@@ -62,7 +64,7 @@ disable-model-invocation: true
 - 关键入口、表单、按钮和状态切换可操作；外部服务用明确标注的模拟结果，不发真实业务请求，不冒充连接成功。
 - 采用可信、非敏感示例数据；真实产品名称/清单有来源则核对，不编造生产事实。
 - 共用 [主题](assets/theme.css)、[组件样式](assets/shared.css)、[评审交互](assets/prototype.js)，通用样式不在每页重新设计。新增页面专有样式写在注入标记外。
-- 使用内置脚本将共享资产嵌入 HTML：`node "${CLAUDE_SKILL_DIR}/scripts/embed-assets.mjs" <明确的HTML文件>...`。Node.js 仅为构建脚本运行条件，无 npm 包；无 Node 时可按同名标记手工内嵌并核验，不自动安装。
+- 使用内置脚本将共享资产嵌入 HTML：`node "<本技能实际绝对路径>/scripts/embed-assets.mjs" <明确的HTML文件>...`（执行前解析真实路径，不依赖宿主独有变量）。Node.js 仅为构建脚本运行条件，无 npm 包；无 Node 时可按同名标记手工内嵌并核验，不自动安装。
 - 交付 HTML 的 CSS、JS、字体和必需素材不依赖网络或本机文件，双击可用。内嵌 SVG 或文本图标，不引用 CDN。
 - 图示、文字、模板保持一致。层级、流程、状态关系用 ASCII 更清楚时必须配图；旁注按需配图，不为配图而配图。
 - 不默认另写独立 PRD，不生成 spec/design/tasks，不自动改项目规范或套件公共资产，不引入新依赖，不提交、推送。
@@ -70,7 +72,7 @@ disable-model-invocation: true
 ## 验证与独立审核闭环
 
 1. 浏览器实际打开产物，核查全部索引、子 Tab、关键入口、表单与错误恢复、返回路径；检查遮挡、溢出、控制台错误和外部资源依赖。明确记录浏览器、视口、检查项及实际结果。
-2. 根据 [审核清单](references/review-checklist.md)，向独立的 `prototype-review` 子 Agent 提供目标 HTML、proposal、已认可基准（如有）、本技能绝对路径与浏览器实测证据。审核 Agent 定义随技能提供，位于 [agents/prototype-review.md](agents/prototype-review.md)。
+2. 根据 [审核清单](references/review-checklist.md)，向独立的 `prototype-review` 子 Agent 提供目标 HTML、proposal、已认可基准（如有）、本技能绝对路径与浏览器实测证据。审核 Agent 定义随技能提供，Claude Code 定义位于 [agents/prototype-review.md](agents/prototype-review.md)，Codex 定义位于 [agents/prototype-review.toml](agents/prototype-review.toml)。
 3. 子 Agent 只读，批量输出问题、定位与改法，不修改产物。必须在当前任务取得完整结果，不启动后就结束交付。
 4. 统一修复必改项，再跑受影响的浏览器检查并由子 Agent 复审。建议默认采纳；不采纳需解释，涉及产品方向或共享风格规范先请用户决定。
 5. 无法修复或需产品裁决时报告阻塞；禁止主 Agent 自判独立审核通过。发生修改后，旧审核结论不能证明新版本通过。

@@ -5,6 +5,8 @@ argument-hint: "[需求名]"
 disable-model-invocation: true
 ---
 
+> 宿主引用：Claude Code 使用 `/pmspec-review`，Codex 使用 `$pmspec-review`。下文 `$ARGUMENTS` 指用户调用时的参数；宿主不替换该变量时从自然语言读取，不把字面量当作需求名。阶段仅由用户显式选择，不自动执行。
+
 # PMSpec · Review（未启用）
 
 全程中文。此阶段未来用于检查需求本身的遗漏、矛盾与闭环，不重复 apply 中的原型质量审核。

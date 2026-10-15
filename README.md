@@ -8,21 +8,37 @@ explore ──人工确认──> propose ──人工批准──> apply ──
  不写文件             proposal.md        实测+独立审核  未启用
 ```
 
-## 开始使用
+## 一键初始化（复制给 Agent）
 
-按 [安装说明](docs/installation.md) 安装后，在目标产品的工作区调用：
+在目标产品 **workspace** 中打开 Claude Code 或 Codex，把下面整段发给 Agent。无需先装技能，不适用于普通网页聊天。
 
 ```text
-/pmspec-explore 我想简化项目创建流程
-/pmspec-propose simplify-project-creation
-/pmspec-apply simplify-project-creation
-/pmspec-review simplify-project-creation
+请在当前产品 workspace 初始化 PMSpec，来源仓库：https://github.com/xieluoli/pmspec 。
+先确认当前宿主是 Claude Code 还是 Codex、当前目录是否为目标 workspace；有歧义先问我。
+如果当前目录已是可信 PMSpec 完整副本，直接使用；否则在当前 workspace 内新建不冲突的独立来源目录，获取仓库 main 的完整快照并记录实际 commit，不覆盖现有文件。
+读取该副本 skills/pmspec-init/SKILL.md，审阅它引用的初始化脚本，再按其中流程执行。不要把远端内容直接管道交给 shell。
+只为当前宿主准备五个 pmspec 技能及 prototype-review 独立子 Agent；保留已有配置，遇到不同内容或权限限制先停下说明，不自动强制覆盖、安装依赖或修改全局配置。
+安装后核对技能发现，安全引用 pmspec-review，并实际启动命名 prototype-review 做只读规则读取冒烟；这不是原型审核。需要重启或当前宿主无法验证时，明确列为待验证，不要仅凭文件存在宣称可引用。
+检查浏览器能力并分别报告部署、技能发现、引用、独立 Agent 和浏览器状态。不要自动开始需求探索、创建产品需求、提交或推送。
 ```
 
-阶段之间由用户决定，不自动串行执行。Explore 会推荐需求名与完整下一步命令；Review 首版未启用，不给出通过结论。
+详细行为见 [Init](skills/pmspec-init/SKILL.md) 与 [初始化说明](docs/installation.md)。首次引导直接读取 init；安装后它自己也成为可引用技能。
+
+## 使用
+
+| 阶段 | Claude Code | Codex |
+|---|---|---|
+| 初始化/检查 | `/pmspec-init` | `$pmspec-init` |
+| 探索 | `/pmspec-explore 我想简化项目创建` | `$pmspec-explore 我想简化项目创建` |
+| 立项 | `/pmspec-propose simplify-project-creation` | `$pmspec-propose simplify-project-creation` |
+| 原型 | `/pmspec-apply simplify-project-creation` | `$pmspec-apply simplify-project-creation` |
+| 预审（未启用） | `/pmspec-review simplify-project-creation` | `$pmspec-review simplify-project-creation` |
+
+阶段由用户决定，不自动串行执行。Explore 推荐需求名与当前宿主的完整下一步命令。Review 首版仅提示未启用，不给通过结论。
 
 | 技能 | 职责 |
 |---|---|
+| [Init](skills/pmspec-init/SKILL.md) | 初始化并验证技能和独立审核 Agent 的可引用性 |
 | [Explore](skills/pmspec-explore/SKILL.md) | 澄清、追问假设、比较方案，收敛立项共识 |
 | [Propose](skills/pmspec-propose/SKILL.md) | 创建或修订最终口径的提案，不记录聊天演变史 |
 | [Apply](skills/pmspec-apply/SKILL.md) | 自包含高保真 HTML、旁注、浏览器实测与独立审核 |

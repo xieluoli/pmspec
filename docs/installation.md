@@ -1,71 +1,86 @@
-# 安装与运行条件
+# 初始化与运行条件
 
-## 适用范围
+## 首次使用
 
-首版提供 Claude Code 的文件式安装方式；其他宿主只有支持技能文件、工作区读写、浏览器和独立子 Agent 才能完成同等流程。未验证的平台不承诺开箱即用。无需 OpenSpec、jyopsx、superpowers、proto-gen 或 npm 包。
+在目标产品 workspace 的 Claude Code 或 Codex 中，复制 [README 初始化文本](../README.md#一键初始化复制给-agent)。它让 Agent 取得可信来源并读取 [pmspec-init](../skills/pmspec-init/SKILL.md)，不要求技能事先存在。
 
-| 使用内容 | 必需能力 |
-|---|---|
-| explore | 对话，按需读取用户授权资料 |
-| propose | 读取及写入目标 workspace |
-| apply | 读写文件、浏览器实测、独立审核子 Agent |
-| review | 仅保留入口，未启用审查 |
-| 资产嵌入 | Node.js 内置模块；缺少时可手工内嵌，不自动安装 |
-| 打开交付 HTML | 普通浏览器；无服务器、网络或构建工具要求 |
-
-## 项目级安装（推荐）
-
-以下命令由用户在本地执行，不是技能运行中自动修改宿主的授权。先取得本仓库的一份完整副本，设 `SOURCE` 为该副本的绝对路径，进入要使用 PMSpec 的产品 workspace。不要把仓库检出位置误认成产品产物目录。
-
-先确认目标不存在同名技能或 Agent；若已有文件，应比对协调后更新，**不能直接覆盖项目特化规则**。以下命令先完整检查冲突，再复制：
-
-```sh
-SOURCE=/absolute/path/to/pmspec
-# 先 cd 到目标产品 workspace，再执行：
-(
-  set -eu
-  for skill in pmspec-explore pmspec-propose pmspec-apply pmspec-review; do
-    test -f "$SOURCE/skills/$skill/SKILL.md" || { echo "源目录不完整：$skill"; exit 1; }
-    if test -e ".claude/skills/$skill" || test -L ".claude/skills/$skill"; then
-      echo "已有技能，需先比对：$skill"; exit 1
-    fi
-  done
-  test -f "$SOURCE/skills/pmspec-apply/agents/prototype-review.md"
-  if test -e .claude/agents/prototype-review.md || test -L .claude/agents/prototype-review.md; then
-    echo "已有审核 Agent，需先比对"; exit 1
-  fi
-  mkdir -p .claude/skills .claude/agents
-  for skill in pmspec-explore pmspec-propose pmspec-apply pmspec-review; do
-    cp -R "$SOURCE/skills/$skill" .claude/skills/
-  done
-  cp "$SOURCE/skills/pmspec-apply/agents/prototype-review.md" .claude/agents/
-)
+```text
+README 文本 -> 获取完整来源 -> 读取 init -> 宿主适配 -> 预检与部署
+                                                          |
+                               技能发现 + 安全引用 + 独立 Agent 冒烟
+                                                          |
+                                             报告已验证 / 待重启 / 阻塞
 ```
 
-所有支持文件与技能一起复制，不仅是 SKILL.md。重启会话，确认四个 `/pmspec-*` 命令和 `prototype-review` 已加载；**磁盘上存在文件不等于宿主加载成功**。在 Multica 等托管环境使用平台支持的技能/Agent 配置入口，不能仅凭复制文件承诺运行时已加载。
+支持具有文件工作区的 Claude Code 与 Codex（CLI / 具备相应能力的开发环境）；不包含 ChatGPT 普通网页聊天。不承诺旧版本、托管环境或无独立子 Agent 的环境具备同等能力。
 
-用户级安装可将 `.claude/skills/` 与 `.claude/agents/` 替换为 `~/.claude/skills/` 与 `~/.claude/agents/`，冲突检查及重启步骤相同。不要两处各装不同版本；项目副本优先时须确认实际使用的是哪份。
+## 宿主适配
 
-## 原型审核 Agent
+| 项目 | Claude Code | Codex |
+|---|---|---|
+| workspace 技能目录 | `.claude/skills/` | `.agents/skills/` |
+| 引用技能 | `/pmspec-init`、`/pmspec-explore` 等 | `$pmspec-init`、`$pmspec-explore` 等；`/skills` 选择器 |
+| 独立 Agent | `.claude/agents/prototype-review.md` | `.codex/agents/prototype-review.toml` |
+| 只读约束 | Read/Glob/Grep 工具白名单 | 开发者指令只读，权限继承父会话，不是独立只读沙箱 |
+| 加载检查 | 检查技能和 Agent 是否出现，新 Agent 目录可能需重启 | 检查技能与自定义 Agent 是否出现，未发现时重启；旧版本可能不支持此 Agent 格式 |
 
-随库定义在 [prototype-review.md](../skills/pmspec-apply/agents/prototype-review.md)。它只允许 Read、Glob、Grep，不能写文件或执行命令。审核规则在安装后的 apply 技能内部，不依赖开发者机器上的私有路径。
+技能的逻辑名称统一，输入方式遵循当前宿主，不声称 Codex 的 `/pmspec-init` 是原生命令。没有发现接口时可待新会话验证，不能捏造成功。不要用其他宿主 CLI 或全局凭据绕过当前托管环境权限。
 
-主 Agent 负责浏览器实测，审核 Agent 读取其证据并独立检查源码/提案。调用时必须提供目标、proposal、基准、apply 技能绝对路径及实测证据；详见 [审核运行契约](../skills/pmspec-apply/references/runtime.md)。主 Agent 取得完整结果后才交付。
+官方依据：[Claude Code 技能](https://code.claude.com/docs/en/skills)、[Claude Code 子 Agent](https://code.claude.com/docs/en/sub-agents)、[Codex 技能](https://learn.chatgpt.com/docs/build-skills)、[Codex 子 Agent](https://learn.chatgpt.com/docs/agent-configuration/subagents)。按实际宿主版本核对；版本不支持应报告阻塞，不擅自迁移配置。
 
-无命名注册机制的宿主可按运行契约用独立子 Agent 读取同一定义，但必须如实说明模式，遵守宿主与项目的更严格限制。没有独立执行上下文时，不能让主 Agent 自查后声称独立审核通过。
+## 安装脚本（init 使用，无需用户手工复制）
 
-## 浏览器与缺失能力
+脚本仅使用 Node.js 内置模块，不安装 npm 包。先审阅可信副本中的脚本；在已确认的 workspace 执行，不能对未知内容直接下载后管道执行。
 
-浏览器实测工具由宿主提供，例如已配置的浏览器 MCP；PMSpec 不自动安装服务、修改 settings.json 或申请扩大权限。可以直接打开 file URL；工具不支持时使用获授权的本地预览方式，并在任务内关闭本次启动的临时服务。
+```sh
+node /path/to/source/skills/pmspec-init/scripts/install.mjs --host claude --workspace /path/to/product --check
+node /path/to/source/skills/pmspec-init/scripts/install.mjs --host claude --workspace /path/to/product
+```
 
-缺浏览器、未加载审核 Agent 或无法读取完整规则时：说明阻塞，可保留原型草稿，但不能标为通过。不要“先跳过再假定可用”。
+Codex 使用 `--host codex`。目标必须为已存在、获授权的产品 workspace。脚本从自身相邻目录读取同一套五个技能，包含完整支持文件；已安装的 init 也能从同一安装目录取得其他技能。仅传入一个宿主，不自动同时部署。
 
-## 更新
+- `--check`：全量预检，无文件写入。
+- 首次部署：复制五个技能及当前宿主的审核 Agent 定义。
+- 重复部署：相同内容不动；不同内容、额外文件或符号链接冲突时，在写入前整批停止，交给用户协调。
+- 不修改全局配置、config.toml、settings.json、CLAUDE.md、AGENTS.md、项目规则、现有产品需求或 Git 状态。
+- 写入时若发生并发文件冲突或磁盘错误，报告实际部分状态，不自动清理他人文件，不宣称事务回滚。
+- Node 不可用则报告 init 阻塞，不自动安装。打开生成的 HTML 本身不需要 Node。
 
-更新前对比已安装文件与当前版本，保留项目特化。共享资产变化后仅刷新本次授权的 HTML：
+## 部署不等于可引用
+
+Init 必须报告下列证据，不能用“复制成功”代替：
+
+1. 五个技能与宿主专用 Agent 定义部署完整。
+2. 宿主技能列表/选择器可发现五项。
+3. 仅安全引用 pmspec-review，收到“需求预审规则尚未启用”，不创建产品需求。
+4. 独立启动命名 prototype-review，读取审核清单并返回实际规则摘要；这是注册冒烟，不是原型审核。
+5. 浏览器工具是否可用；未操作则标记“已发现、未实测”。
+
+缺发现能力或需重启时，标待验证并提供下一会话操作。未做运行时检查不可宣称“技能与审核 Agent 已可引用”。不自动开始 explore、立项、生成原型、提交或推送。
+
+## Apply 所需能力
+
+无需外部需求框架或技能包。Init 的安装授权不延伸为安装浏览器、修改 MCP、模型或权限的授权。
+
+| 内容 | 必需能力 |
+|---|---|
+| init | 工作区读写、Node.js、可信完整来源；发现和调用需要宿主支持 |
+| explore | 对话，按需读取获授权资料 |
+| propose | 读取及写入目标 workspace |
+| apply | 文件读写、浏览器实测、独立审核子 Agent |
+| review | 仅保留入口，未启用正式预审 |
+| HTML 打开 | 普通浏览器，无服务器、网络或构建工具要求 |
+
+浏览器与审核调用约定见 [运行契约](../skills/pmspec-apply/references/runtime.md)。缺能力可以保留草稿，但不能宣布 Apply 审核通过。
+
+## 更新与冲突
+
+新版与已安装内容不同会被脚本阻止，用户先审阅差异并批准替换范围；不提供自动强制覆盖，不静默清理旧文件。部署新版后重新检查运行时发现。
+
+共享原型资产变化时，仅对本次授权 HTML 重新嵌入：
 
 ```sh
 node /path/to/installed/pmspec-apply/scripts/embed-assets.mjs pmspec/changes/需求名/prototypes/index.html
 ```
 
-脚本无需依赖安装；它只替换目标文件三对内嵌标记，页面自有代码不受影响。更新原型后重跑受影响实测及独立审核，不能沿用旧结论。
+更新原型后重跑受影响的实测与独立审核。注册冒烟、原型审核、用户验收分别记录。

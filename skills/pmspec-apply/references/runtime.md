@@ -1,6 +1,6 @@
 # 运行条件与独立审核
 
-PMSpec 不依赖 OpenSpec、superpowers、jyopsx 或 proto-gen。套件自包含不等于宿主无需能力：
+PMSpec 不依赖 OpenSpec、superpowers 或 proto-gen。套件自包含不等于宿主无需能力：
 
 | 阶段 | 宿主能力 |
 |---|---|
@@ -11,13 +11,22 @@ PMSpec 不依赖 OpenSpec、superpowers、jyopsx 或 proto-gen。套件自包含
 
 HTML 打开无需 Node、Python、服务器或网络。内置资产嵌入脚本使用 Node.js 内置模块，无 npm 依赖；无 Node 可手工内嵌三份资产，不自动安装。
 
-## Claude Code 安装
+## 初始化与宿主适配
 
-四个技能目录整体放到项目 .claude/skills/ 或用户 ~/.claude/skills/。apply 的 assets/、references/、scripts/ 和 agents/ 必须一起安装，不可只复制 SKILL.md。
+使用同套件 pmspec-init 准备五个技能及命名审核 Agent；首次尚未安装时可让 Agent 从仓库 README 的通用初始化文本开始。规则和资产始终由本套件提供，不依赖外部技能。
 
-agents/prototype-review.md 是随套件提供的定义，必须另外复制到项目 .claude/agents/prototype-review.md（用户级安装则放 ~/.claude/agents/）。不要覆盖已有同名文件或项目特化规则；先比对协调。详见仓库 docs/installation.md。
+```text
+Claude Code                          Codex
+.claude/skills/pmspec-*/              .agents/skills/pmspec-*/
+.claude/agents/prototype-review.md    .codex/agents/prototype-review.toml
+/pmspec-apply 需求名                  $pmspec-apply 需求名
+```
 
-新建 agents 目录后应重启会话并确认 `prototype-review` 可调用。定义文件存在不等于已加载。审核 Agent 定义只允许 Read、Glob、Grep，不能写文件或执行 Bash；它使用源码与主 Agent 提供的浏览器证据，不假称自己进行了浏览器操作。
+Apply 的 assets/、references/、scripts/、agents/ 必须整体安装。不要覆盖同名不同内容，保留项目特化规则。新建 Agent 目录或宿主尚未发现时可能需要重启，磁盘文件不等于已加载。
+
+Claude Code Agent 用 Read/Glob/Grep 白名单限制写入；Codex Agent 继承父会话权限，仅通过开发者指令约束只读，不能当作独立只读沙箱。两种宿主定义都读取本技能相同的审核清单，不维护两份审核规则。
+
+初始化必须验证技能发现、安全引用未启用的 Review，以及命名 prototype-review 独立规则读取冒烟。冒烟不是原型审核，不能据此标原型可交付。本节仅说明准备方式，Apply 自身仍需检查实际能力；不在运行中静默调用 init 改配置。
 
 ## 审核调用契约
 
@@ -31,7 +40,7 @@ agents/prototype-review.md 是随套件提供的定义，必须另外复制到�
 
 在当前任务内等待完整结果；不能把仍在运行的审核当已完成。修复后提供变更内容、新证据及上一轮必改项供复审。
 
-宿主无命名 Agent 注册机制，但支持独立子 Agent 时，可以让新的独立子 Agent 完整读取随套件的 agents/prototype-review.md，按同一规则只读审核，并如实标注采用了提示定义模式及权限限制方式。它必须是另一个执行上下文，不是主 Agent 换角色自查。若环境或项目规定只允许命名 Agent，则遵守更严格规定，不以通用 Agent 绕过。
+宿主无命名 Agent 注册机制，但支持独立子 Agent 时，可以让新的独立子 Agent 完整读取随套件对应宿主的 agents/prototype-review 定义，按同一规则只读审核，并如实标注采用了提示定义模式及权限限制方式。它必须是另一个执行上下文，不是主 Agent 换角色自查。若环境或项目规定只允许命名 Agent，则遵守更严格规定，不以通用 Agent 绕过。
 
 没有独立子 Agent、Agent 未加载且宿主不支持提示定义模式、无法读取审核规则、没有浏览器实测能力时，报告对应阻塞。可以保留草稿，但不得标记审核通过。人工代看也不能包装成内置审核。
 

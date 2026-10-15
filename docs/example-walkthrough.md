@@ -2,7 +2,9 @@
 
 此文件是教学用的虚构需求依据，不是线上功能、真实用户批准记录或正式需求副本。打开 [example.html](../skills/pmspec-apply/assets/example.html) 即可离线操作；[template.html](../skills/pmspec-apply/assets/template.html) 是最小起步骨架，不是完整业务原型。
 
-## 四个技能如何衔接
+## 初始化后，四个产品阶段如何衔接
+
+先按 [初始化说明](installation.md) 准备当前宿主的五个技能与审核 Agent，核验可引用性；Claude Code 使用 `/pmspec-*`，Codex 使用 `$pmspec-*`。
 
 1. Explore：讨论“谁为什么需要创建项目”，确定本次只演示名称输入、保存与返回，不做成员、权限和真实存储。推荐 `simplify-project-creation`，在对话中确认共识。
 2. Propose：用户批准后，写入目标产品 workspace 的 `pmspec/changes/simplify-project-creation/proposal.md`，以 Why / What Changes / Capabilities / Impact 为骨架。只写最终需求，不写“讨论后取消成员功能”。

@@ -26,12 +26,12 @@ for (const file of files.filter((path) => extname(path) === '.md')) {
   }
   assert(!content.includes('/Users/'), `私有机器路径：${file}`);
 }
-const skillNames = ['pmspec-explore', 'pmspec-propose', 'pmspec-apply', 'pmspec-review'];
+const skillNames = ['pmspec-init', 'pmspec-explore', 'pmspec-propose', 'pmspec-apply', 'pmspec-review'];
 for (const skillName of skillNames) {
   const content = await readFile(join(root, 'skills', skillName, 'SKILL.md'), 'utf8');
   assert(content.startsWith(`---\nname: ${skillName}\n`), skillName);
   assert(content.includes('disable-model-invocation: true'), '不得自动推进阶段');
-  assert(content.includes('$ARGUMENTS'), '必须声明输入');
+  assert(content.includes('$ARGUMENTS') || skillName === 'pmspec-init', '必须声明输入');
 }
 const applyRoot = join(root, 'skills/pmspec-apply');
 const script = join(applyRoot, 'scripts/embed-assets.mjs');
@@ -71,4 +71,7 @@ try {
 } finally {
   await rm(temporary, { recursive: true });
 }
-console.info(`通过：4 个技能、${linkCount} 个内部链接、脚本语法、2 个自包含 HTML、内嵌一致性与幂等/拒绝错误输入`);
+const initialization = spawnSync(process.execPath, [join(root, 'tests/init.mjs')], { encoding: 'utf8' });
+assert.equal(initialization.status, 0, initialization.stderr);
+console.info(initialization.stdout.trim());
+console.info(`通过：5 个技能、${linkCount} 个内部链接、脚本语法、2 个自包含 HTML、内嵌一致性与幂等/拒绝错误输入`);
