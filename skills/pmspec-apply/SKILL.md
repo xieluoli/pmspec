@@ -13,15 +13,15 @@ disable-model-invocation: true
 
 ## 先检查，后制作
 
-1. 确认 workspace 与安全的 kebab-case 需求名，读取 `pmspec/changes/<需求名>/proposal.md` 和已有 prototypes/；先保留旧文件及他人改动。
+1. 确认 workspace 与安全的 kebab-case 需求名，按项目约定定位需求根目录；无约定时读取 `pmspec/changes/<需求名>/proposal.md` 和已有 prototypes/。先保留旧文件及他人改动。
 2. 确认 proposal 获明确批准。文件存在不等于批准；跨会话无批准依据时先问。缺少影响流程、权限或验收的产品决策时，暂停依赖它的部分，一次问一个问题。
-3. 基准顺序：用户指定 → 项目明确认可的原型或规范 → 本技能内置默认主题。不根据修改时间自行认定正式版本；不引入未批准草稿。不擅自重设计未涉及部分。
+3. 读取 [项目设计依据与审核交接](references/design-context.md)，按用户本次指定 → 项目明确认可的规范或历史原型 → 内置默认主题确定依据，记录来源及本次批准范围。绘制前说明组件/页面骨架的新增、修改、保留项；无 DESIGN 的新项目直接使用默认主题，不强制建设设计系统。
 4. 规划页面、关键状态及主流程覆盖，并简述制作范围。可逆布局按规范自行处理；范围或产品规则变更先请用户确认。
 5. 检查宿主文件读写、独立子 Agent 和浏览器能力。读 [运行与审核约定](references/runtime.md)。缺失就报告，不静默安装依赖，不用自查冒充独立审核。缺审核或浏览器时只能产未完成验证的草稿，说明阻塞。
 
 ## 产物与结构
 
-只写 `<workspace>/pmspec/changes/<需求名>/prototypes/` 内的 HTML 原型，必要时修订用户已批准变更的 proposal。默认单个 HTML 含全部展示单元；太大时按完整流程拆分，提供清晰的相对链接入口。
+只写所定位需求目录的 `prototypes/` 内的 HTML 原型（默认 `<workspace>/pmspec/changes/<需求名>/prototypes/`），必要时修订用户已批准变更的 proposal。默认单个 HTML 含全部展示单元；太大时按完整流程拆分，提供清晰的相对链接入口。
 
 ```text
 原型 HTML
@@ -63,7 +63,7 @@ disable-model-invocation: true
 
 - 关键入口、表单、按钮和状态切换可操作；外部服务用明确标注的模拟结果，不发真实业务请求，不冒充连接成功。
 - 采用可信、非敏感示例数据；真实产品名称/清单有来源则核对，不编造生产事实。
-- 共用 [主题](assets/theme.css)、[组件样式](assets/shared.css)、[评审交互](assets/prototype.js)，通用样式不在每页重新设计。新增页面专有样式写在注入标记外。
+- 复用 [主题](assets/theme.css)、[组件样式](assets/shared.css)、[评审交互](assets/prototype.js)；内置产品样式仅为兜底。项目已有设计依据时保真映射其组件与页面骨架，产品样式在注入标记外按根容器隔离/覆盖，避免污染评审层；不为单个项目修改套件公共资产。
 - 使用内置脚本将共享资产嵌入 HTML：`node "<本技能实际绝对路径>/scripts/embed-assets.mjs" <明确的HTML文件>...`（执行前解析真实路径，不依赖宿主独有变量）。Node.js 仅为构建脚本运行条件，无 npm 包；无 Node 时可按同名标记手工内嵌并核验，不自动安装。
 - 交付 HTML 的 CSS、JS、字体和必需素材不依赖网络或本机文件，双击可用。内嵌 SVG 或文本图标，不引用 CDN。
 - 图示、文字、模板保持一致。层级、流程、状态关系用 ASCII 更清楚时必须配图；旁注按需配图，不为配图而配图。
@@ -71,8 +71,8 @@ disable-model-invocation: true
 
 ## 验证与独立审核闭环
 
-1. 浏览器实际打开产物，核查全部索引、子 Tab、关键入口、表单与错误恢复、返回路径；检查遮挡、溢出、控制台错误和外部资源依赖。明确记录浏览器、视口、检查项及实际结果。
-2. 根据 [审核清单](references/review-checklist.md)，向独立的 `prototype-review` 子 Agent 提供目标 HTML、proposal、已认可基准（如有）、本技能绝对路径与浏览器实测证据。审核 Agent 定义随技能提供，Claude Code 定义位于 [agents/prototype-review.md](agents/prototype-review.md)，Codex 定义位于 [agents/prototype-review.toml](agents/prototype-review.toml)。
+1. 浏览器实际打开产物，核查全部索引、子 Tab、关键入口、表单与错误恢复、返回路径；检查遮挡、溢出、控制台错误和外部资源依赖。按设计交接约定记录当前文件版本、浏览器、视口、检查项及实际结果；视觉改动采样受影响关键控件的最终生效样式，不强求全量矩阵。
+2. 根据 [审核清单](references/review-checklist.md) 和设计交接约定，向独立的 `prototype-review` 子 Agent 提供目标/需求、设计依据、批准范围、复用映射、本技能绝对路径及当前版本的浏览器证据。审核 Agent 定义随技能提供，Claude Code 定义位于 [agents/prototype-review.md](agents/prototype-review.md)，Codex 定义位于 [agents/prototype-review.toml](agents/prototype-review.toml)。
 3. 子 Agent 只读，批量输出问题、定位与改法，不修改产物。必须在当前任务取得完整结果，不启动后就结束交付。
 4. 统一修复必改项，再跑受影响的浏览器检查并由子 Agent 复审。建议默认采纳；不采纳需解释，涉及产品方向或共享风格规范先请用户决定。
 5. 无法修复或需产品裁决时报告阻塞；禁止主 Agent 自判独立审核通过。发生修改后，旧审核结论不能证明新版本通过。

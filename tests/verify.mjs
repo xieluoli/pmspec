@@ -34,6 +34,36 @@ for (const skillName of skillNames) {
   assert(content.includes('$ARGUMENTS') || skillName === 'pmspec-init', '必须声明输入');
 }
 const applyRoot = join(root, 'skills/pmspec-apply');
+// 文本契约回归，不替代真实宿主的生成、浏览器实测或独立审核。
+const designContext = await readFile(join(applyRoot, 'references/design-context.md'), 'utf8');
+for (const [scenario, required] of [
+  ['无 DESIGN 的新项目', ['新项目无依据时可直接使用内置默认主题', '不自动创建 DESIGN']],
+  ['已有规范的项目', ['组件与页面骨架的来源、变体和对应原型位置', '无需搬入框架或新增依赖']],
+  ['仅批准局部迁移', ['不再因它未全局批准而重复阻塞', '保留无关操作、入口顺序与布局']],
+  ['证据与职责', ['被检文件版本标识', '最终生效样式', '真实 APP 或后端未运行，不自动阻塞', '主 Agent 不得换角色自判通过']],
+]) {
+  for (const text of required) assert(designContext.includes(text), `${scenario}：${text}`);
+}
+for (const filename of ['SKILL.md', 'references/runtime.md', 'references/prototype.md', 'references/review-checklist.md']) {
+  const content = await readFile(join(applyRoot, filename), 'utf8');
+  assert(content.includes('design-context.md'), `生成/审核共用设计交接：${filename}`);
+}
+const reviewer = await readFile(join(applyRoot, 'agents/prototype-review.md'), 'utf8');
+const reviewerToml = await readFile(join(applyRoot, 'agents/prototype-review.toml'), 'utf8');
+// 当前 TOML 的开发者指令使用单行双引号字符串，与 JSON 转义兼容。
+const reviewerInstructions = JSON.parse(reviewerToml.match(/^developer_instructions = (.+)$/m)[1]);
+for (const content of [reviewer, reviewerInstructions]) {
+  for (const text of ['references/design-context.md', 'references/review-checklist.md', '设计依据与本次批准范围', '复用映射', '当前证据版本', '全局批准', '真实 APP/后端未运行不自动阻塞']) {
+    assert(content.includes(text), `两种宿主审核输入一致：${text}`);
+  }
+}
+assert(reviewer.includes('tools: Read, Glob, Grep'), 'Claude 审核仍为只读工具白名单');
+assert(reviewerInstructions.includes('不宣称有独立只读沙箱'), 'Codex 不扩大权限承诺');
+for (const skillName of ['pmspec-propose', 'pmspec-apply']) {
+  const content = await readFile(join(root, 'skills', skillName, 'SKILL.md'), 'utf8');
+  assert(content.includes('需求根目录'), 'Propose/Apply 沿用项目路径');
+}
+console.info('通过：设计交接文本契约（默认主题 / 既有规范 / 局部批准）、双宿主审核定义与项目路径');
 const script = join(applyRoot, 'scripts/embed-assets.mjs');
 for (const filename of ['prototype.js', '../scripts/embed-assets.mjs']) {
   const result = spawnSync(process.execPath, ['--check', join(applyRoot, 'assets', filename)], { encoding: 'utf8' });
