@@ -37,6 +37,12 @@ await assertDirectories(workspace);
 await access(workspace, constants.W_OK);
 const requiredFiles = [
   'pmspec-init/scripts/install.mjs',
+  'pmspec-init/references/design-system.md',
+  'pmspec-init/templates/design/DESIGN.md',
+  'pmspec-init/templates/design/foundations.md',
+  'pmspec-init/templates/design/components.md',
+  'pmspec-init/templates/design/patterns.md',
+  'pmspec-init/templates/design/brand.md',
   'pmspec-propose/templates/proposal.md',
   'pmspec-apply/agents/prototype-review.md',
   'pmspec-apply/agents/prototype-review.toml',
@@ -47,6 +53,8 @@ const requiredFiles = [
   'pmspec-apply/assets/prototype.js',
   'pmspec-apply/scripts/embed-assets.mjs',
   'pmspec-apply/references/runtime.md',
+  'pmspec-apply/references/design-context.md',
+  'pmspec-apply/references/default-design.md',
   'pmspec-apply/references/prototype.md',
   'pmspec-apply/references/annotations.md',
   'pmspec-apply/references/review-checklist.md',

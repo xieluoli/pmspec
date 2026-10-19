@@ -19,7 +19,7 @@ explore ──人工确认──> propose ──人工批准──> apply ──
 读取该副本 skills/pmspec-init/SKILL.md，审阅它引用的初始化脚本，再按其中流程执行。不要把远端内容直接管道交给 shell。
 只为当前宿主准备五个 pmspec 技能及 prototype-review 独立子 Agent；保留已有配置，遇到不同内容或权限限制先停下说明，不自动强制覆盖、安装依赖或修改全局配置。
 安装后核对技能发现，安全引用 pmspec-review，并实际启动命名 prototype-review 做只读规则读取冒烟；这不是原型审核。需要重启或当前宿主无法验证时，明确列为待验证，不要仅凭文件存在宣称可引用。
-检查浏览器能力并分别报告部署、技能发现、引用、独立 Agent 和浏览器状态。不要自动开始需求探索、创建产品需求、提交或推送。
+检查浏览器能力。检查已有项目设计入口，询问尚未提供的产品代码仓本地路径；有仓库只读提取设计依据，没有则建议采用套件内置默认规范。先展示摘要、来源、适用范围和拟写文件，经我确认后再初始化项目设计基准；已有不同内容不覆盖，不虚构 LOGO。分别报告部署、技能发现、引用、独立 Agent、浏览器与设计基准状态。不要自动开始需求探索、创建产品需求、提交或推送。
 ```
 
 详细行为见 [Init](skills/pmspec-init/SKILL.md) 与 [初始化说明](docs/installation.md)。首次引导直接读取 init；安装后它自己也成为可引用技能。
@@ -38,11 +38,19 @@ explore ──人工确认──> propose ──人工批准──> apply ──
 
 | 技能 | 职责 |
 |---|---|
-| [Init](skills/pmspec-init/SKILL.md) | 初始化并验证技能和独立审核 Agent 的可引用性 |
+| [Init](skills/pmspec-init/SKILL.md) | 部署并验证技能/审核 Agent，经确认初始化项目设计基准 |
 | [Explore](skills/pmspec-explore/SKILL.md) | 澄清、追问假设、比较方案，收敛立项共识 |
 | [Propose](skills/pmspec-propose/SKILL.md) | 创建或修订最终口径的提案，不记录聊天演变史 |
 | [Apply](skills/pmspec-apply/SKILL.md) | 自包含高保真 HTML、旁注、浏览器实测与独立审核 |
 | [Review](skills/pmspec-review/SKILL.md) | 需求逻辑预审的未启用入口 |
+
+## 项目设计基准
+
+Init 先复用已有正式入口；无入口时，经确认在产品 workspace 的 `pmspec/design/` 建立 `DESIGN.md`、`foundations.md` 和 `components/README.md`。页面模式、品牌规则与 LOGO 等资产按需增加；没有代码仓也能采用内置默认规范，不建空树、不虚构品牌。
+
+- [初始化流程与目录](skills/pmspec-init/references/design-system.md)：有仓库只读提取，默认规范兜底，摘要确认后写入；不自动迁移生产设计。
+- [默认设计依据](skills/pmspec-apply/references/default-design.md)：与现有 CSS 一致，区分产品与评审工具层。
+- [生成与审核交接](skills/pmspec-apply/references/design-context.md)：同一入口、版本和采用范围，未确认草稿不自动成为标准。
 
 ## 产物与原型结构
 
