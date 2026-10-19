@@ -101,6 +101,9 @@ try {
 } finally {
   await rm(temporary, { recursive: true });
 }
+const review = spawnSync(process.execPath, [join(root, 'tests/review.mjs')], { encoding: 'utf8' });
+assert.equal(review.status, 0, review.stderr);
+console.info(review.stdout.trim());
 const initialization = spawnSync(process.execPath, [join(root, 'tests/init.mjs')], { encoding: 'utf8' });
 assert.equal(initialization.status, 0, initialization.stderr);
 console.info(initialization.stdout.trim());
