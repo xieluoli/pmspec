@@ -72,10 +72,10 @@ disable-model-invocation: true
 ## 验证与独立审核闭环
 
 1. 浏览器实际打开产物，核查全部索引、子 Tab、关键入口、表单与错误恢复、返回路径；检查遮挡、溢出、控制台错误和外部资源依赖。按设计交接约定记录当前文件版本、浏览器、视口、检查项及实际结果；视觉改动采样受影响关键控件的最终生效样式，不强求全量矩阵。
-2. 根据 [审核清单](references/review-checklist.md) 和设计交接约定，向独立的 `prototype-review` 子 Agent 提供目标/需求、设计依据、批准范围、复用映射、本技能绝对路径及当前版本的浏览器证据。审核 Agent 定义随技能提供，Claude Code 定义位于 [agents/prototype-review.md](agents/prototype-review.md)，Codex 定义位于 [agents/prototype-review.toml](agents/prototype-review.toml)。
-3. 子 Agent 只读，批量输出问题、定位与改法，不修改产物。必须在当前任务取得完整结果，不启动后就结束交付。
-4. 统一修复必改项，再跑受影响的浏览器检查并由子 Agent 复审。建议默认采纳；不采纳需解释，涉及产品方向或共享风格规范先请用户决定。
-5. 无法修复或需产品裁决时报告阻塞；禁止主 Agent 自判独立审核通过。发生修改后，旧审核结论不能证明新版本通过。
+2. **显式调用命名审核 Agent（强制卡点）**：按 [宿主调用与结果校验](references/runtime.md) 调用 `prototype-review`（Claude Code 使用 `Agent(subagent_type="prototype-review", …)`；Codex 使用自身命名子 Agent 机制）。根据 [审核清单](references/review-checklist.md) 和设计交接约定，向独立的 `prototype-review` 子 Agent 提供目标/需求、设计依据、批准范围、复用映射、本技能绝对路径及当前版本的浏览器证据。审核 Agent 定义随技能提供，Claude Code 定义位于 [agents/prototype-review.md](agents/prototype-review.md)，Codex 定义位于 [agents/prototype-review.toml](agents/prototype-review.toml)。
+3. 子 Agent 只读，批量输出问题与百分制评分，不修改产物。必须在当前任务取得完整结果，核对分项/总分、硬性条件和固定末行，不启动后就交付、不仅搜索通过字样。未启动、无响应或报告无效只报“审核未完成”，PM 不代打分。
+4. 统一修复必改项及导致不通过的偏差，再跑受影响的浏览器检查，更新版本与证据，将上一轮报告交原命名子 Agent 复审并重新评分。建议默认采纳；不采纳需解释，涉及产品方向或共享风格规范先请用户决定。
+5. 仅在分数及硬性条件均满足、末行为有效的“审核通过 N分”时进入待人工验收；具体阈值与权重只维护在审核清单。无法修复或需产品裁决时报告阻塞；禁止主 Agent 自判独立审核通过。发生修改后，旧审核结论不能证明新版本通过。
 
 需求规则变化须经用户确认，并同步 proposal 与旁注；已决定的待决条目移除，不遗留矛盾。
 
