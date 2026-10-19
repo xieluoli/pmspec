@@ -7,6 +7,7 @@ PMSpec 重新组织为产品工作流，不是外部技能的调用包装层。�
 | [OpenSpec](https://github.com/Fission-AI/OpenSpec) | 阶段调用方式、change 目录与 proposal 核心章节 | CLI、schema、spec/design/tasks、研发实施与自动归档 |
 | [Superpowers Brainstorming](https://github.com/obra/superpowers) | 理解问题、一次一问、方案取舍、人工批准 | 研发架构流程、writing-plans 依赖与自动提交 |
 | [grill-me](https://github.com/mattpocock/skills/blob/main/docs/productivity/grill-me.md) | 按决策依赖追问、挑战假设 | 外部技能链、问尽全部分支才结束 |
+| 用户提供的 DESIGN-claude.md 与 genesis-DESIGN.md | 设计意图、语义颜色、排版/组件表格、响应式与 Do/Don’t 的组织方法 | 原文整篇复制、品牌配色/素材、外链字体、未核实参数或存在冲突的组件语义 |
 | 用户提供的需求探索与原型制作实践 | 探索与立项分离、原型三段结构、产品旁注、独立审核 | 私有路径、研发产物、强制 macOS、外部 CLI 或主题服务 |
 
 本库正文与精简示例资产为本次重新编写，未整份复制参考仓库的代码、样式、模板或素材。未来引入第三方文件须核查其许可并保留所需声明；来源链接不等于取得复制授权。仓库许可尚待维护者选择，本次不擅自授予开源许可。
@@ -16,6 +17,7 @@ PMSpec 重新组织为产品工作流，不是外部技能的调用包装层。�
 - 每个技能 SKILL.md 说明职责、规则、输入/输出与结束条件；读者不用先学旧技能体系。
 - 细节仅链接套件内部 references/；不添加跨项目私有模块依赖。
 - Apply 的结构、旁注、运行条件、审核清单按职责分开；审核清单是子 Agent 的唯一审核规则源。
+- 项目设计初始化规则和模板随 Init 分发；默认设计说明随 Apply 分发并以实际 CSS 为准。产品 workspace 的设计基准不放进技能安装目录；源码更新不自动迁移已确认项目基准。
 - 共享样式和交互只在 assets/ 中维护，HTML 内嵌副本由 embed-assets.mjs 刷新；不手改内嵌资产。
 - 图示、正文、模板、示例同步。修改展示规则时同步审核清单，不只更新 README。
 - 新增能力、改变审批检查点、改共享规范或引入依赖须维护者批准，不由技能运行时自行扩展。
