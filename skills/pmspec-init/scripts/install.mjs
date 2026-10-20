@@ -54,6 +54,7 @@ const requiredFiles = [
   'pmspec-apply/scripts/embed-assets.mjs',
   'pmspec-apply/references/runtime.md',
   'pmspec-apply/references/design-context.md',
+  'pmspec-apply/references/delivery.md',
   'pmspec-apply/references/default-design.md',
   'pmspec-apply/references/prototype.md',
   'pmspec-apply/references/annotations.md',

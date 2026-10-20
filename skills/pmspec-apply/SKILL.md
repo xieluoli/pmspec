@@ -13,7 +13,7 @@ disable-model-invocation: true
 
 ## 先检查，后制作
 
-1. 确认 workspace 与安全的 kebab-case 需求名，按项目约定定位需求根目录；无约定时读取 `pmspec/changes/<需求名>/proposal.md` 和已有 prototypes/。先保留旧文件及他人改动。
+1. 确认 workspace 与安全的 kebab-case 需求名，按项目约定定位需求根目录；无约定时读取 `pmspec/changes/<需求名>/proposal.md` 和已有 prototypes/。先保护旧文件及他人改动；工作副本与过程证据按[交付清理约定](references/delivery.md)放在需求目录外的运行临时区，不等于永久交付。
 2. 确认 proposal 获明确批准。文件存在不等于批准；跨会话无批准依据时先问。缺少影响流程、权限或验收的产品决策时，暂停依赖它的部分，一次问一个问题。
 3. 读取 [项目设计依据与审核交接](references/design-context.md)，按用户本次指定 → 项目明确认可的规范或历史原型 → 内置默认主题确定依据，记录来源及本次批准范围。先检查既有入口或 pmspec/design/DESIGN.md，按需读取通用规范、组件、页面模式和品牌规则，核对采用状态。绘制前说明组件/页面骨架的新增、修改、保留项；无 DESIGN 的新项目直接使用默认主题，不强制建设设计系统；默认说明见 [默认设计依据](references/default-design.md)。Init 的源码提取草稿不能仅凭文件存在就当已批准规范。
 4. 规划页面、关键状态及主流程覆盖，并简述制作范围。可逆布局按规范自行处理；范围或产品规则变更先请用户确认。
@@ -21,7 +21,7 @@ disable-model-invocation: true
 
 ## 产物与结构
 
-只写所定位需求目录的 `prototypes/` 内的 HTML 原型（默认 `<workspace>/pmspec/changes/<需求名>/prototypes/`），必要时修订用户已批准变更的 proposal。默认单个 HTML 含全部展示单元；太大时按完整流程拆分，提供清晰的相对链接入口。
+正式产物仅写所定位需求目录的 `proposal.md` 与 `prototypes/` 内一个自包含 HTML（默认 `<workspace>/pmspec/changes/<需求名>/prototypes/`）。新增页面在原入口继续向下平铺，必要时修订已批准变更的 proposal；拆分 HTML 或增加附件须用户明确批准。截图、脚本、报告、旧稿等不是正式产物，按[交付清理约定](references/delivery.md)管理。
 
 ```text
 原型 HTML
@@ -80,6 +80,8 @@ disable-model-invocation: true
 需求规则变化须经用户确认，并同步 proposal 与旁注；已决定的待决条目移除，不遗留矛盾。
 
 ## 交付
+
+先执行[交付前清理卡点](references/delivery.md)：核对清单与删除授权、合并有效规则、内嵌素材、持久留痕，再移除冗余文件并验证引用。默认需求目录最终恰好 `proposal.md` 和一个统一入口 HTML；不把过程报告作为额外交付，也不以清理为由跳过验证。
 
 列出原型入口、覆盖页面/状态、浏览器实测证据、独立子 Agent 结论、Not run 及阻塞和待验收事项。审核结论、浏览器实测与人工验收分开记录。缺少任一必需验证只交草稿，不说通过。
 

@@ -76,3 +76,7 @@ Init 先复用已有正式入口；无入口时，经确认在产品 workspace �
 - [运行条件与安装](docs/installation.md)：无独立子 Agent 或浏览器时不能宣称 Apply 通过。
 - [验证记录](docs/verification.md)与[检查脚本](tests/verify.mjs)：区分静态检查、实测、审核与人工验收。当前原型独立审核受宿主未注册 Agent 阻塞。
 - [来源与维护](docs/sources.md)：吸收方法、不继承外部运行依赖。
+
+## 正式交付
+
+Propose 只交 `proposal.md`；Apply 默认再交一个自包含、页面向下平铺的 HTML。截图、测试和审核记录放在需求目录外临时区，完成验证并持久留痕后按授权清理，不混入研发阅读路径；额外交付须明确批准。见[交付清理约定](skills/pmspec-apply/references/delivery.md)。
