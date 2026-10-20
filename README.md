@@ -44,6 +44,9 @@ explore ──人工确认──> propose ──人工批准──> apply ──
 | [Apply](skills/pmspec-apply/SKILL.md) | 自包含高保真 HTML、旁注、浏览器实测与独立审核 |
 | [Review](skills/pmspec-review/SKILL.md) | 需求逻辑预审的未启用入口 |
 
+
+局部修订优先复用 [验证脚手架](skills/pmspec-apply/references/verification-harness.md)，按 [增量交审](skills/pmspec-apply/references/incremental-review.md) 核验差异与证据链；无可靠基线退全量，独立审核与完整评分不变。
+
 ## 项目设计基准
 
 Init 先复用已有正式入口；无入口时，经确认在产品 workspace 的 `pmspec/design/` 建立 `DESIGN.md`、`foundations.md` 和 `components/README.md`。页面模式、品牌规则与 LOGO 等资产按需增加；没有代码仓也能采用内置默认规范，不建空树、不虚构品牌。
