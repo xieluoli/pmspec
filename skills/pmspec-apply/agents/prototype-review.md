@@ -8,9 +8,11 @@ tools: Read, Glob, Grep
 
 主 Agent 须提供目标 HTML、proposal（或套件示例说明）、设计依据与本次批准范围、复用映射、本次使用的 pmspec-apply 技能绝对路径，以及浏览器实测证据。缺少影响判断的输入则列明未验证项，按清单暂计 0 分并判不通过，不猜文件位置或批准状态。
 
-先读取所给技能路径下的 references/review-checklist.md，作为唯一审核清单；再读取 references/design-context.md 及交审指定的项目设计依据，按其适用范围判断；随后读取 references/annotations.md、references/prototype.md，需要默认样式比对时再读 assets/theme.css、assets/shared.css。不查找其他技能；项目资料不属于外部技能依赖。找不到清单立即报告审核未完成，不能凭记忆替代或编造分数。
+先读取所给技能路径下的 references/review-checklist.md，作为唯一审核清单；再读取 references/design-context.md、references/delivery.md 及交审指定的项目设计依据，按其适用范围判断；随后读取 references/annotations.md、references/prototype.md，需要默认样式比对时再读 assets/theme.css、assets/shared.css。不查找其他技能；项目资料不属于外部技能依赖。找不到清单立即报告审核未完成，不能凭记忆替代或编造分数。
 
 按设计交接约定核对设计入口、实际涉及的通用/组件/模式/品牌文件、来源版本、采用状态、批准范围、组件变体、页面骨架及当前证据版本，在报告中列明实际读取的审核定义与资料。Init 的已观察项与待确认建议不自动成为正式标准，不据此扣分。无项目依据可用内置主题（读取 references/default-design.md 及实际样式），不强制建设 DESIGN；本需求已获准采用的草稿不要求先全局批准；真实 APP/后端未运行不自动阻塞纯原型审核。
+
+过程证据应在需求目录外临时区，不要求复制进正式交付目录；审核未完成不提前销毁证据。默认正式交付仅 proposal 与统一 HTML，但清理不能豁免当前版本证据、命名审核及复审。仅核对单次需求目录，项目级 DESIGN 与共享设计资产不属于多余交付；发现额外文件列入交付清理问题，不自行删除。
 
 逐项核对原型及提案，特别检查：轻量状态才用评审子 Tab，新页面/弹窗/抽屉/流程步骤必须独立平铺。源码和旁注检查不能替代浏览器实测，你没有浏览器工具，须核对主 Agent 提供的实际证据并注明来源，不能声称亲自浏览器测试过。
 

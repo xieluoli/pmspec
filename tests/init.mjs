@@ -34,7 +34,9 @@ try {
     for (const file of ['references/design-system.md', 'templates/design/DESIGN.md', 'templates/design/foundations.md', 'templates/design/components.md', 'templates/design/patterns.md', 'templates/design/brand.md']) {
       assert.equal(await readFile(join(skillRoot, 'pmspec-init', file), 'utf8'), await readFile(join(root, 'skills/pmspec-init', file), 'utf8'));
     }
-    assert.equal(await readFile(join(skillRoot, 'pmspec-apply/references/default-design.md'), 'utf8'), await readFile(join(root, 'skills/pmspec-apply/references/default-design.md'), 'utf8'));
+    for (const file of ['default-design.md', 'delivery.md']) {
+      assert.equal(await readFile(join(skillRoot, 'pmspec-apply/references', file), 'utf8'), await readFile(join(root, 'skills/pmspec-apply/references', file), 'utf8'));
+    }
     assert.deepEqual((await readdir(workspace)).sort(), ['AGENTS.md', ...(host === 'claude' ? ['.claude'] : ['.agents', '.codex'])].sort(), '安装脚本不生成项目设计基准');
     const agentFile = join(workspace, host === 'claude' ? '.claude/agents/prototype-review.md' : '.codex/agents/prototype-review.toml');
     assert.equal(await readFile(agentFile, 'utf8'), await readFile(join(root, 'skills/pmspec-apply/agents', host === 'claude' ? 'prototype-review.md' : 'prototype-review.toml'), 'utf8'));
@@ -96,6 +98,16 @@ try {
       assert.deepEqual(await readdir(missingTarget), [], '缺来源不产生部分写入');
     }
     await writeFile(source, original);
+  }
+  const deliverySource = join(sourceSnapshot, 'skills/pmspec-apply/references/delivery.md');
+  await rm(deliverySource);
+  for (const host of ['claude', 'codex']) {
+    for (const extra of [[], ['--check']]) {
+      const rejected = spawnSync(process.execPath, [join(sourceSnapshot, 'skills/pmspec-init/scripts/install.mjs'), '--host', host, '--workspace', missingTarget, ...extra], { encoding: 'utf8' });
+      assert.notEqual(rejected.status, 0, `${host} ${extra.join(' ')} 缺少交付约定须拒绝`);
+      assert(rejected.stderr.includes('delivery.md'), '应定位缺少的交付约定');
+      assert.deepEqual(await readdir(missingTarget), [], '缺少交付约定时不得写入任何文件或目录');
+    }
   }
   assert.notEqual(run(temporary, 'unknown').status, 0);
   assert.notEqual(run(join(temporary, 'does-not-exist'), 'claude').status, 0);
