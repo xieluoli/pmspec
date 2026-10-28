@@ -65,7 +65,7 @@ Claude Code workspace                 Codex workspace
 
 1. **文件核对**：五个技能全部存在，支持文件与来源一致；Agent 名为 prototype-review。记录来源 commit 或“本地来源，commit 未核实”。
 2. **技能发现**：用宿主可用的技能列表/选择器核对五项。Claude Code 新建 Agent 目录后可能需重启；Codex 更新未显示时重启。没有发现接口时明确未验证，不能编造列表。
-3. **安全引用检查**：仅调用 `pmspec-review`，确认返回“需求预审规则尚未启用”，不执行 explore/propose/apply，不创建需求文件。托管环境不允许当前会话加载新技能时，给新会话的检查指令，标为待重启验证。
+3. **安全引用检查**：仅以 `--check` 调用 `pmspec-review`（Claude Code：`/pmspec-review --check`；Codex：`$pmspec-review --check`），核对技能名称、三项职责、三种状态以及“仅验证技能引用，未整理资产或变更状态”的说明。不提供需求名，不查找或整理产品需求、不读写需求状态，不执行 explore/propose/apply。托管环境不允许当前会话加载新技能时，给新会话的检查指令，标为待重启验证。
 4. **独立 Agent 冒烟**：显式启动命名的 `prototype-review`，按 [显式调用契约](../pmspec-apply/references/runtime.md) 让它只读其收到的 apply 技能路径下 references/review-checklist.md，返回实际标题、六个评分维度及满分、通过线与硬性条件、固定末行的两种格式。检查其为独立执行上下文，当前任务取得结果。此次仅检查注册和读取，不是原型审核，不评分、不输出“审核通过/审核不通过 N分”。未启动或无响应如实记录，不代编结果。
 5. **浏览器能力**：检查宿主是否已有可用浏览器工具；未进行浏览器操作时标“已发现、未实测”。没有就列 Apply 阻塞，不自动安装浏览器、修改 MCP 或放宽权限。
 

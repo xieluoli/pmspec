@@ -4,8 +4,8 @@
 
 ```text
 explore ──人工确认──> propose ──人工批准──> apply ──> review
- 澄清需求             正式提案            HTML原型    预留入口
- 不写文件             proposal.md        实测+独立审核  未启用
+ 澄清需求             正式提案            HTML原型    资产整理
+ 不写文件             proposal.md        实测+独立审核  对齐+状态
 ```
 
 ## 一键初始化（复制给 Agent）
@@ -18,7 +18,7 @@ explore ──人工确认──> propose ──人工批准──> apply ──
 如果当前目录已是可信 PMSpec 完整副本，直接使用；否则在当前 workspace 内新建不冲突的独立来源目录，获取仓库 main 的完整快照并记录实际 commit，不覆盖现有文件。
 读取该副本 skills/pmspec-init/SKILL.md，审阅它引用的初始化脚本，再按其中流程执行。不要把远端内容直接管道交给 shell。
 只为当前宿主准备五个 pmspec 技能及 prototype-review 独立子 Agent；保留已有配置，遇到不同内容或权限限制先停下说明，不自动强制覆盖、安装依赖或修改全局配置。
-安装后核对技能发现，安全引用 pmspec-review，并实际启动命名 prototype-review 做只读规则读取冒烟；这不是原型审核。需要重启或当前宿主无法验证时，明确列为待验证，不要仅凭文件存在宣称可引用。
+安装后核对技能发现，以 --check 只读引用 pmspec-review，不传需求名、不整理产品资产或变更需求状态；并实际启动命名 prototype-review 做只读规则读取冒烟，这不是原型审核。需要重启或当前宿主无法验证时，明确列为待验证，不要仅凭文件存在宣称可引用。
 检查浏览器能力。检查已有项目设计入口，询问尚未提供的产品代码仓本地路径；有仓库只读提取设计依据，没有则建议采用套件内置默认规范。先展示摘要、来源、适用范围和拟写文件，经我确认后再初始化项目设计基准；已有不同内容不覆盖，不虚构 LOGO。分别报告部署、技能发现、引用、独立 Agent、浏览器与设计基准状态。不要自动开始需求探索、创建产品需求、提交或推送。
 ```
 
@@ -32,9 +32,9 @@ explore ──人工确认──> propose ──人工批准──> apply ──
 | 探索 | `/pmspec-explore 我想简化项目创建` | `$pmspec-explore 我想简化项目创建` |
 | 立项 | `/pmspec-propose simplify-project-creation` | `$pmspec-propose simplify-project-creation` |
 | 原型 | `/pmspec-apply simplify-project-creation` | `$pmspec-apply simplify-project-creation` |
-| 预审（未启用） | `/pmspec-review simplify-project-creation` | `$pmspec-review simplify-project-creation` |
+| 整理/状态管理 | `/pmspec-review simplify-project-creation` | `$pmspec-review simplify-project-creation` |
 
-阶段由用户决定，不自动串行执行。Explore 推荐需求名与当前宿主的完整下一步命令。Review 首版仅提示未启用，不给通过结论。
+阶段由用户决定，不自动串行执行。Explore 推荐需求名与当前宿主的完整下一步命令。需求质量在 Explore / Apply 完善；Review 整理最终文件资产，清除聊天过程冗余并核对提案、画面、旁注对齐。
 
 | 技能 | 职责 |
 |---|---|
@@ -42,8 +42,9 @@ explore ──人工确认──> propose ──人工批准──> apply ──
 | [Explore](skills/pmspec-explore/SKILL.md) | 澄清、追问假设、比较方案，收敛立项共识 |
 | [Propose](skills/pmspec-propose/SKILL.md) | 创建或修订最终口径的提案，不记录聊天演变史 |
 | [Apply](skills/pmspec-apply/SKILL.md) | 自包含高保真 HTML、旁注、浏览器实测与独立审核 |
-| [Review](skills/pmspec-review/SKILL.md) | 需求逻辑预审的未启用入口 |
+| [Review](skills/pmspec-review/SKILL.md) | 整理最终资产、核对需求与原型对齐，按用户明确说明更新状态 |
 
+需求状态只在 `proposal.md` 标题下维护，新建默认为 `未评审`；`待发布 / 已发布` 表示产品功能待上线 / 已上线。已有状态仅在用户明确说明后变更，整理、审核通过及合入均不自动改变；已发布需求修订先保留状态并询问。完整约定见 [Review](skills/pmspec-review/SKILL.md#需求状态唯一维护约定)。
 
 局部修订优先复用 [验证脚手架](skills/pmspec-apply/references/verification-harness.md)，按 [增量交审](skills/pmspec-apply/references/incremental-review.md) 核验差异与证据链；无可靠基线退全量，独立审核与完整评分不变。
 
