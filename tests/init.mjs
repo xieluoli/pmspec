@@ -14,6 +14,13 @@ try {
     const workspace = join(temporary, host);
     await mkdir(workspace);
     await writeFile(join(workspace, 'AGENTS.md'), 'existing project rules');
+    const changeDirectory = join(workspace, 'pmspec/changes/existing-feature');
+    await mkdir(join(changeDirectory, 'prototypes'), { recursive: true });
+    const productFiles = new Map([
+      [join(changeDirectory, 'proposal.md'), '# 既有需求\n\n状态：已发布\n\n需求正文须保留。\n'],
+      [join(changeDirectory, 'prototypes/index.html'), '<!doctype html><title>既有原型</title><p>用户内容</p>'],
+    ]);
+    for (const [path, content] of productFiles) await writeFile(path, content);
     const configDirectory = join(workspace, host === 'claude' ? '.claude' : '.codex');
     await mkdir(configDirectory);
     const configFile = join(configDirectory, host === 'claude' ? 'settings.json' : 'config.toml');
@@ -37,7 +44,8 @@ try {
     for (const file of ['default-design.md', 'delivery.md']) {
       assert.equal(await readFile(join(skillRoot, 'pmspec-apply/references', file), 'utf8'), await readFile(join(root, 'skills/pmspec-apply/references', file), 'utf8'));
     }
-    assert.deepEqual((await readdir(workspace)).sort(), ['AGENTS.md', ...(host === 'claude' ? ['.claude'] : ['.agents', '.codex'])].sort(), '安装脚本不生成项目设计基准');
+    assert.deepEqual((await readdir(workspace)).sort(), ['AGENTS.md', 'pmspec', ...(host === 'claude' ? ['.claude'] : ['.agents', '.codex'])].sort(), '安装脚本不生成项目设计基准');
+    for (const [path, content] of productFiles) assert.equal(await readFile(path, 'utf8'), content, '安装预检与部署不得修改已有需求、上线状态或原型；不代表技能运行时引用已验证');
     const agentFile = join(workspace, host === 'claude' ? '.claude/agents/prototype-review.md' : '.codex/agents/prototype-review.toml');
     assert.equal(await readFile(agentFile, 'utf8'), await readFile(join(root, 'skills/pmspec-apply/agents', host === 'claude' ? 'prototype-review.md' : 'prototype-review.toml'), 'utf8'));
     assert.equal(await readFile(configFile, 'utf8'), 'existing configuration');

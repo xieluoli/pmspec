@@ -7,7 +7,7 @@ PMSpec 不依赖 OpenSpec、superpowers 或 proto-gen。套件自包含不等于
 | explore | 对话；有资料时具备获授权的读取能力 |
 | propose | 对话、读取与写入工作区 |
 | apply | 文件读写、浏览器实测、独立子 Agent |
-| review | 未启用，仅提示状态 |
+| review | 读取与整理需求文件，按用户明确说明更新状态；`--check` 只读验证引用 |
 
 HTML 打开无需 Node、Python、服务器或网络。内置资产嵌入脚本使用 Node.js 内置模块，无 npm 依赖；无 Node 可手工内嵌三份资产，不自动安装。
 
@@ -26,7 +26,7 @@ Apply 的 assets/、references/、scripts/、agents/ 必须整体安装。不要
 
 Claude Code Agent 用 Read/Glob/Grep 白名单限制写入；Codex Agent 继承父会话权限，仅通过开发者指令约束只读，不能当作独立只读沙箱。两种宿主定义都读取本技能相同的审核清单，不维护两份审核规则。
 
-初始化必须验证技能发现、安全引用未启用的 Review，以及命名 prototype-review 独立规则读取冒烟。冒烟不是原型审核，不能据此标原型可交付。本节仅说明准备方式，Apply 自身仍需检查实际能力；不在运行中静默调用 init 改配置。
+初始化必须验证技能发现、以 `--check` 只读引用 Review，以及命名 prototype-review 独立规则读取冒烟。引用检查不提供需求名、不查找或整理产品资产、不读写需求状态；冒烟不是原型审核，不能据此标原型可交付。本节仅说明准备方式，Apply 自身仍需检查实际能力；不在运行中静默调用 init 改配置。
 
 ## 固定预览与验证入口
 
