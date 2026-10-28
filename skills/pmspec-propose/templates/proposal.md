@@ -1,6 +1,10 @@
-# 需求标题
+---
+name: requirement-name
+version: "产品发布版本"
+status: 未评审
+---
 
-状态：未评审
+# 需求标题
 
 ## Why
 

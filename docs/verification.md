@@ -139,3 +139,12 @@ node tests/verify.mjs
 - 五技能 YAML 解析、名称及显式阶段调用策略检查、`git diff --check` 通过。通用 `quick_validate.py` 对主分支和本次 Review 均因既有 `argument-hint` / `disable-model-invocation` 不在其白名单而拒绝；保留双宿主原有字段，不为迁就检查器改变调用策略。
 - 独立提交前审查发现运行契约中两处旧 Review 占位说明，修正后复核未发现其他可确认缺陷。
 - **Not run：**真实 Claude Code/Codex 新会话技能发现、安装后 `--check` 引用和命名 prototype-review 新版生效冒烟；本轮未改套件 HTML/CSS/JS，不重跑浏览器、原型评分或生产产品。样例通过不保证全部实际需求均已验证。
+
+## Proposal YAML 元数据（2026-10-28）
+
+在 `af9eafd` 后按用户确认，将上一轮标题下的状态行改为文档开头的 YAML Front Matter，字段固定为 `name / version / status`。name 对应需求目录，version 为已确认的产品发布版本字符串，未知先问；状态授权规则不变。模板、Propose、Apply、Review、README 与走查说明同步，存量不批量迁移。
+
+- YAML 实际解析验证模板三字段及正文标题顺序；带引号的 `"1.10"`、`"1.14.1"`、`"v1.14.1"` 均保持原字符串，不转成数字。
+- 独立 Agent 执行四个隔离样例，主 Agent 核对实际快照与差异：明确产品版本时生成三字段提案；版本未知时先询问且不创建提案；仅更新上线状态时只改 status，保留 `version: "1.10"`、正文及 HTML；旧格式缺版本时询问，保留原状态和正文、不擅自迁移。
+- `node tests/verify.mjs`、`git diff --check` 通过；双宿主安装样例改用三字段元数据，验证原有发布版本、状态和正文均保持。独立差异审查未发现可确认缺陷。
+- **Not run：**实际宿主重新发现、安装后引用与完整业务原型审核；前述七个资产整理样例是上一轮源码结果，本轮四例验证元数据变更，不将旧结果冒充本轮重跑。未改套件 HTML/CSS/JS，不重跑浏览器。
