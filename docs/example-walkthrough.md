@@ -7,7 +7,7 @@
 先按 [初始化说明](installation.md) 准备当前宿主的五个技能与审核 Agent，核验可引用性；Claude Code 使用 `/pmspec-*`，Codex 使用 `$pmspec-*`。
 
 1. Explore：讨论“谁为什么需要创建项目”，确定本次只演示名称输入、保存与返回，不做成员、权限和真实存储。推荐 `simplify-project-creation`，在对话中确认共识。
-2. Propose：用户批准后，写入目标产品 workspace 的 `pmspec/changes/simplify-project-creation/proposal.md`，以 Why / What Changes / Capabilities / Impact 为骨架，标题下新建 `状态：未评审`。只写最终需求，不写“讨论后取消成员功能”。
+2. Propose：用户批准后，写入目标产品 workspace 的 `pmspec/changes/simplify-project-creation/proposal.md`，以 Why / What Changes / Capabilities / Impact 为骨架。文件最开头使用 YAML Front Matter：`name: simplify-project-creation`、`version: "1.14.1"`、`status: 未评审`，正文不重复状态。这里的版本仅为教学示例，实际须使用该需求已确认的产品发布版本，未知先问。只写最终需求，不写“讨论后取消成员功能”。
 3. Apply：确认 proposal 获批后，制作原型，实测并独立审核。当前随库 HTML 演示该阶段的结构和本地模拟，不是通过命令自动生成的真实产品需求。
 4. Review：整理聊天过程冗余，核对 proposal、原型画面与旁注是否对齐；有产品口径冲突先询问，不凭较新文件裁决。整理完成保留状态；用户明确说明“这个功能已上线，更新为已发布”后才变更 proposal 中的状态。后续修订先保留已发布状态并询问，不自动回退。完整规则见 [Review](../skills/pmspec-review/SKILL.md)。
 

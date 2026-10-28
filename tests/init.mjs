@@ -17,7 +17,7 @@ try {
     const changeDirectory = join(workspace, 'pmspec/changes/existing-feature');
     await mkdir(join(changeDirectory, 'prototypes'), { recursive: true });
     const productFiles = new Map([
-      [join(changeDirectory, 'proposal.md'), '# 既有需求\n\n状态：已发布\n\n需求正文须保留。\n'],
+      [join(changeDirectory, 'proposal.md'), '---\nname: existing-feature\nversion: "1.14.1"\nstatus: 已发布\n---\n\n# 既有需求\n\n需求正文须保留。\n'],
       [join(changeDirectory, 'prototypes/index.html'), '<!doctype html><title>既有原型</title><p>用户内容</p>'],
     ]);
     for (const [path, content] of productFiles) await writeFile(path, content);

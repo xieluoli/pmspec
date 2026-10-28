@@ -44,7 +44,7 @@ explore ──人工确认──> propose ──人工批准──> apply ──
 | [Apply](skills/pmspec-apply/SKILL.md) | 自包含高保真 HTML、旁注、浏览器实测与独立审核 |
 | [Review](skills/pmspec-review/SKILL.md) | 整理最终资产、核对需求与原型对齐，按用户明确说明更新状态 |
 
-需求状态只在 `proposal.md` 标题下维护，新建默认为 `未评审`；`待发布 / 已发布` 表示产品功能待上线 / 已上线。已有状态仅在用户明确说明后变更，整理、审核通过及合入均不自动改变；已发布需求修订先保留状态并询问。完整约定见 [Review](skills/pmspec-review/SKILL.md#需求状态唯一维护约定)。
+需求元数据只在 `proposal.md` 开头的 YAML Front Matter 维护 `name / version / status`：name 与需求目录名一致，version 为已确认的产品发布版本字符串，未知先问；status 新建默认为 `未评审`，`待发布 / 已发布` 表示产品功能待上线 / 已上线。已有状态仅在用户明确说明后变更，整理、审核通过及合入均不自动改变；修订保留原版本，已发布需求先保留状态并询问。格式见 [提案模板](skills/pmspec-propose/templates/proposal.md)，完整约定见 [Review](skills/pmspec-review/SKILL.md#需求元数据唯一维护约定)。
 
 局部修订优先复用 [验证脚手架](skills/pmspec-apply/references/verification-harness.md)，按 [增量交审](skills/pmspec-apply/references/incremental-review.md) 核验差异与证据链；无可靠基线退全量，独立审核与完整评分不变。
 
