@@ -1,17 +1,27 @@
-# 示例走查：简化项目创建
+# 从提案到第一份原型
 
-此文件是教学用的虚构需求依据，不是线上功能、真实用户批准记录或正式需求副本。打开 [example.html](../skills/pmspec-apply/assets/example.html) 即可离线操作；[template.html](../skills/pmspec-apply/assets/template.html) 是最小起步骨架，不是完整业务原型。
+先[安装 PMSpec](installation.md)。在测试项目练习时，用下面的虚构「创建条目」场景。
 
-## 初始化后，四个产品阶段如何衔接
+## 走一遍工作流
 
-先按 [初始化说明](installation.md) 准备当前宿主的五个技能与审核 Agent，核验可引用性；Claude Code 使用 `/pmspec-*`，Codex 使用 `$pmspec-*`。
+1. 想法未定，用 Explore 确认用户目标、入口、保存结果和失败恢复。
+2. 口径已定，用 `/pmspec-propose create-item` 或 `$pmspec-propose create-item` 生成提案，填写已确认的产品发布版本。提案写清列表、新建、取消和保存后回到列表。有已确认提案时直接走下一步。
+3. 用户批准提案后，用 `/pmspec-apply-artifacts create-item` 或 `$pmspec-apply-artifacts create-item` 生成单文件画板。当前版本浏览器实测并通过命名审核后，交用户验收。
+4. 需要整理时用 Review。核对提案、画面和旁注的最终口径，发布状态按用户明确指令更新。
 
-1. Explore：讨论“谁为什么需要创建项目”，确定本次只演示名称输入、保存与返回，不做成员、权限和真实存储。推荐 `simplify-project-creation`，在对话中确认共识。
-2. Propose：用户批准后，写入目标产品 workspace 的 `pmspec/changes/simplify-project-creation/proposal.md`，以 Why / What Changes / Capabilities / Impact 为骨架。文件最开头使用 YAML Front Matter：`name: simplify-project-creation`、`version: "1.14.1"`、`status: 未评审`，正文不重复状态。这里的版本仅为教学示例，实际须使用该需求已确认的产品发布版本，未知先问。只写最终需求，不写“讨论后取消成员功能”。
-3. Apply：确认 proposal 获批后，制作原型，实测并独立审核。当前随库 HTML 演示该阶段的结构和本地模拟，不是通过命令自动生成的真实产品需求。
-4. Review：整理聊天过程冗余，核对 proposal、原型画面与旁注是否对齐；有产品口径冲突先询问，不凭较新文件裁决。整理完成保留状态；用户明确说明“这个功能已上线，更新为已发布”后才变更 proposal 中的状态。后续修订先保留已发布状态并询问，不自动回退。完整规则见 [Review](../skills/pmspec-review/SKILL.md)。
+## 直接体验 Artifacts
 
-## 示例交互契约
+打开[创建条目样板](../skills/pmspec-apply-artifacts/assets/example.html)。
+
+- 在「打开条目列表」查看相邻的有数据、空数据、加载失败和加载中。选空数据的「进入体验」，点击「新建条目」，输入名称，点击「保存」。回到列表后确认成功提示及首项。
+- 悬停「填写条目信息」中的「保存」，核对「本地模拟」和逐条规则。分别悬停空列表、失败提示、加载中，比较状态规则。
+- 从加载失败进入体验，点击「重试」看恢复。使用「重置场景」再次验证同一状态，完成后返回原画板。
+
+## 已有经典原型
+
+[经典示例](../skills/pmspec-apply/assets/example.html)演示简化项目创建，通过 [pmspec-apply](../skills/pmspec-apply/SKILL.md) 显式使用。下列步骤适用于经典版。
+
+### 经典交互契约
 
 ```text
 01 列表 ──新建──> 02 弹窗 ──保存成功──> 01 列表
@@ -32,7 +42,7 @@
 - 取消/关闭不保存，清空输入并前往列表；平铺弹窗图仍保留用于评审。
 - 详情页与列表共享演示项目名，刷新全部恢复初始示例。无真实业务请求或存储。
 
-## 走查顺序
+### 经典走查顺序
 
 1. 确认三个独立图示及各自索引、功能概览一一对应。
 2. 点击和键盘切列表子 Tab，确认只改变当前列表轻量状态，弹窗和详情仍可见。

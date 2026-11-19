@@ -9,24 +9,24 @@ PMSpec 不依赖 OpenSpec、superpowers 或 proto-gen。套件自包含不等于
 | apply | 文件读写、浏览器实测、独立子 Agent |
 | review | 读取与整理需求文件，按用户明确说明更新状态；`--check` 只读验证引用 |
 
-HTML 打开无需 Node、Python、服务器或网络。内置资产嵌入脚本使用 Node.js 内置模块，无 npm 依赖；无 Node 可手工内嵌三份资产，不自动安装。
+HTML 打开无需 Node、Python、服务器或网络。内置资产嵌入脚本使用 Node.js 内置模块，无 npm 依赖；经典模板无 Node 时可手工内嵌三份资产；Artifacts 样板已将 CSS、JS 与母版写在单文件中。
 
 ## 初始化与宿主适配
 
-使用同套件 pmspec-init 准备五个技能及命名审核 Agent；首次尚未安装时可让 Agent 从仓库 README 的通用初始化文本开始。规则和资产始终由本套件提供，不依赖外部技能。
+使用同套件 pmspec-init 准备六个技能及命名审核 Agent；首次尚未安装时可让 Agent 从仓库 README 的通用初始化文本开始。规则和资产始终由本套件提供，不依赖外部技能。
 
 ```text
 Claude Code                          Codex
 .claude/skills/pmspec-*/              .agents/skills/pmspec-*/
 .claude/agents/prototype-review.md    .codex/agents/prototype-review.toml
-/pmspec-apply 需求名                  $pmspec-apply 需求名
+/pmspec-apply-artifacts 需求名        $pmspec-apply-artifacts 需求名
 ```
 
-Apply 的 assets/、references/、scripts/、agents/ 必须整体安装。不要覆盖同名不同内容，保留项目特化规则。新建 Agent 目录或宿主尚未发现时可能需要重启，磁盘文件不等于已加载。
+默认入口 [Apply Artifacts](../../pmspec-apply-artifacts/SKILL.md) 使用同套件的共用审核与验证资源。经典排版仍可显式调用 `pmspec-apply`。不要覆盖同名不同内容，保留项目特化规则。新建 Agent 目录或宿主尚未发现时可能需要重启，磁盘文件不等于已加载。
 
 Claude Code Agent 用 Read/Glob/Grep 白名单限制写入；Codex Agent 继承父会话权限，仅通过开发者指令约束只读，不能当作独立只读沙箱。两种宿主定义都读取本技能相同的审核清单，不维护两份审核规则。
 
-初始化必须验证技能发现、以 `--check` 只读引用 Review，以及命名 prototype-review 独立规则读取冒烟。引用检查不提供需求名、不查找或整理产品资产、不读写需求状态；冒烟不是原型审核，不能据此标原型可交付。本节仅说明准备方式，Apply 自身仍需检查实际能力；不在运行中静默调用 init 改配置。
+安装与只读冒烟见 [Init](../../pmspec-init/SKILL.md)。Apply 开始前分别检查浏览器能力和当前版本的命名审核是否可用。
 
 ## 固定预览与验证入口
 
@@ -42,6 +42,8 @@ HTML 仍自包含、双击可用；自动验证的 HTTP 入口不成为交付依
 
 主 Agent 实测后，按 [项目设计依据与审核交接](design-context.md) 的表格提供输入；交接区分首次/无基线全量与有可靠基线的增量模式，按 [增量验证与交审](incremental-review.md) 提供完整差异、影响范围和证据链。生成和审核读取同一设计入口、所涉通用/组件/模式/品牌文件、来源版本、采用状态及批准范围。不增加强制配置文件，无项目依据时明确使用内置默认主题。
 
+交审说明包含实际版式及共用审核资源所在的 `pmspec-apply` 绝对路径。Artifacts 同时提供 `pmspec-apply-artifacts` 的绝对路径，审核者据此读取画板与组件旁注规范。缺少版式且无法依据产物确定时，补齐交审信息。
+
 ### 显式调用与等待（强制卡点）
 
 先确认命名的 `prototype-review` 已被当前宿主发现且注册定义与本次套件版本一致，再调用。若旧注册指令仍要求旧结论或与当前清单冲突，报告待更新/重启验证；读取新版磁盘定义不能覆盖旧的高优先级注册指令。Claude Code 的 Agent 工具调用示例（先将占位说明替换为本次真实输入）：
@@ -50,7 +52,7 @@ HTML 仍自包含、双击可用；自动验证的 HTTP 入口不成为交付依
 {
   "subagent_type": "prototype-review",
   "description": "独立审核当前原型与证据",
-  "prompt": "按本次 apply 技能路径下的共享清单只读审核。交审输入：目标 HTML 与版本、proposal 与批准来源、设计依据及适用范围、复用映射、apply 技能绝对路径、当前浏览器证据与 Not run、上一轮报告及本轮修改（首审写无）；增量时附可核验基线、完整差异、影响范围与逐项证据链，无可靠基线退全量。返回完整评分报告，末行按清单固定格式。",
+  "prompt": "按本次 apply 技能路径下的共享清单只读审核。交审输入：目标 HTML 与版本、proposal 与批准来源、设计依据及适用范围、复用映射、版式与 pmspec-apply 的绝对路径（Artifacts 同附 pmspec-apply-artifacts 路径）、当前浏览器证据与 Not run、上一轮报告及本轮修改（首审写无）；增量时附可核验基线、完整差异、影响范围与逐项证据链，无可靠基线退全量。返回完整评分报告，末行按清单固定格式。",
   "run_in_background": false
 }
 ```
@@ -67,7 +69,7 @@ Codex 使用当前宿主提供的独立子 Agent 调用机制，显式选择已�
 
 ## 证据生命周期
 
-按[交付清理约定](delivery.md)把截图、脚本、实测结果、交审说明与审核报告放在需求目录外的运行临时区；命名审核者读取该位置的当前版本证据，仍执行完整审核与复审。审核未完成不提前销毁证据；正式交付前先把版本、结论、Not run 与必要证据写入宿主持久任务记录，再按已授权清单清理。需求目录最终默认只留 proposal 和统一原型 HTML，不用 archive/ 替代清理。
+按[交付约定](delivery.md)保存当前版本证据并处理历史稿。清理按实际授权执行。
 
 ## 可验证的完成含义
 

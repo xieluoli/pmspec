@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
-import { cp, mkdir, mkdtemp, readFile, readdir, realpath, rm, symlink, writeFile } from 'node:fs/promises';
+import { access, cp, mkdir, mkdtemp, readFile, readdir, realpath, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 
@@ -34,12 +34,23 @@ try {
     assert.equal(installed.status, 0, installed.stderr);
     assert(JSON.parse(installed.stdout).newFiles > 0);
     const skillRoot = join(workspace, host === 'claude' ? '.claude/skills' : '.agents/skills');
-    assert.equal((await readdir(skillRoot)).length, 5);
-    for (const skill of ['init', 'explore', 'propose', 'apply', 'review']) {
-      assert.equal(await readFile(join(skillRoot, `pmspec-${skill}/SKILL.md`), 'utf8'), await readFile(join(root, `skills/pmspec-${skill}/SKILL.md`), 'utf8'));
+    assert.equal((await readdir(skillRoot)).length, 6);
+    for (const skill of ['init', 'explore', 'propose', 'apply-artifacts', 'apply', 'review']) {
+      const entryPath = join(skillRoot, `pmspec-${skill}/SKILL.md`);
+      const entry = await readFile(entryPath, 'utf8');
+      assert.equal(entry, await readFile(join(root, `skills/pmspec-${skill}/SKILL.md`), 'utf8'));
+      assert.equal(await readFile(join(skillRoot, `pmspec-${skill}/agents/openai.yaml`), 'utf8'),
+        await readFile(join(root, `skills/pmspec-${skill}/agents/openai.yaml`), 'utf8'));
+      for (const [, target] of entry.matchAll(/\[[^\]]*\]\(([^)]+)\)/g)) {
+        if (/^(https?:|#)/.test(target)) continue;
+        await access(resolve(dirname(entryPath), target.split('#')[0]));
+      }
     }
     for (const file of ['references/design-system.md', 'templates/design/DESIGN.md', 'templates/design/foundations.md', 'templates/design/components.md', 'templates/design/patterns.md', 'templates/design/brand.md']) {
       assert.equal(await readFile(join(skillRoot, 'pmspec-init', file), 'utf8'), await readFile(join(root, 'skills/pmspec-init', file), 'utf8'));
+    }
+    for (const file of ['references/board.md', 'references/annotations.md', 'assets/example.html']) {
+      assert.equal(await readFile(join(skillRoot, 'pmspec-apply-artifacts', file), 'utf8'), await readFile(join(root, 'skills/pmspec-apply-artifacts', file), 'utf8'));
     }
     for (const file of ['default-design.md', 'delivery.md']) {
       assert.equal(await readFile(join(skillRoot, 'pmspec-apply/references', file), 'utf8'), await readFile(join(root, 'skills/pmspec-apply/references', file), 'utf8'));
@@ -89,37 +100,40 @@ try {
   const missing = spawnSync(process.execPath, [join(sourceSnapshot, 'skills/pmspec-init/scripts/install.mjs'), '--host', 'codex', '--workspace', missingTarget], { encoding: 'utf8' });
   assert.notEqual(missing.status, 0, '来源不完整须在写前拒绝');
   assert.deepEqual(await readdir(missingTarget), []);
-  const designFiles = [
+  const requiredSupportFiles = [
     'pmspec-init/references/design-system.md',
     ...['DESIGN.md', 'foundations.md', 'components.md', 'patterns.md', 'brand.md'].map((name) => `pmspec-init/templates/design/${name}`),
     'pmspec-apply/references/default-design.md',
+    'pmspec-apply-artifacts/assets/example.html',
+    'pmspec-apply-artifacts/references/board.md',
+    'pmspec-apply-artifacts/agents/openai.yaml',
+    'pmspec-explore/references/readiness.md',
+    'pmspec-propose/references/requirement.md',
+    'pmspec-apply/references/incremental-review.md',
+    'pmspec-apply/references/verification-harness.md',
+    ...['browser-checks.js', 'check-review.mjs', 'inspect-html.mjs', 'preview.mjs']
+      .map((name) => `pmspec-apply/scripts/${name}`),
+    'pmspec-apply/references/delivery.md',
   ];
-  // 同一完整来源部署两种宿主时，任意设计支持文件缺失都必须写前拒绝。
+  // 同一完整来源部署两种宿主时，任意必需支持文件缺失都必须写前拒绝。
   await cp(join(root, 'skills'), join(sourceSnapshot, 'skills'), { recursive: true });
-  for (const relative of designFiles) {
+  for (const relative of requiredSupportFiles) {
     const source = join(sourceSnapshot, 'skills', relative);
     const original = await readFile(source);
     await rm(source);
     for (const host of ['claude', 'codex']) {
-      const rejected = spawnSync(process.execPath, [join(sourceSnapshot, 'skills/pmspec-init/scripts/install.mjs'), '--host', host, '--workspace', missingTarget], { encoding: 'utf8' });
-      assert.notEqual(rejected.status, 0, `${host} 缺失设计支持文件应拒绝：${relative}`);
-      assert.deepEqual(await readdir(missingTarget), [], '缺来源不产生部分写入');
+      for (const extra of [[], ['--check']]) {
+        const rejected = spawnSync(process.execPath, [join(sourceSnapshot, 'skills/pmspec-init/scripts/install.mjs'), '--host', host, '--workspace', missingTarget, ...extra], { encoding: 'utf8' });
+        assert.notEqual(rejected.status, 0, `${host} 缺失必需支持文件应拒绝：${relative}`);
+        assert(rejected.stderr.includes(relative), '应定位缺少的资源');
+        assert.deepEqual(await readdir(missingTarget), [], '缺来源不产生部分写入');
+      }
     }
     await writeFile(source, original);
   }
-  const deliverySource = join(sourceSnapshot, 'skills/pmspec-apply/references/delivery.md');
-  await rm(deliverySource);
-  for (const host of ['claude', 'codex']) {
-    for (const extra of [[], ['--check']]) {
-      const rejected = spawnSync(process.execPath, [join(sourceSnapshot, 'skills/pmspec-init/scripts/install.mjs'), '--host', host, '--workspace', missingTarget, ...extra], { encoding: 'utf8' });
-      assert.notEqual(rejected.status, 0, `${host} ${extra.join(' ')} 缺少交付约定须拒绝`);
-      assert(rejected.stderr.includes('delivery.md'), '应定位缺少的交付约定');
-      assert.deepEqual(await readdir(missingTarget), [], '缺少交付约定时不得写入任何文件或目录');
-    }
-  }
   assert.notEqual(run(temporary, 'unknown').status, 0);
   assert.notEqual(run(join(temporary, 'does-not-exist'), 'claude').status, 0);
-  console.info('通过：Claude Code/Codex 五技能与专用 Agent 部署、无写预检、幂等、已安装 init 自检、保留配置、整批冲突保护、额外文件/符号链接/缺来源/错误参数拒绝');
+  console.info('通过：Claude Code/Codex 六技能与专用 Agent 部署、无写预检、幂等、已安装 init 自检、保留配置、整批冲突保护、额外文件/符号链接/缺来源/错误参数拒绝');
 } finally {
   await rm(temporary, { recursive: true });
 }

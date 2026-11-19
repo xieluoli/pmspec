@@ -1,0 +1,477 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>创建条目 · 交互画板</title>
+<style>
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  :root { color-scheme: light; font: 16px/1.55 system-ui, sans-serif; color: #272823; background: #f7f6f1; }
+  body { margin: 0; }
+  main { max-width: 1280px; margin: 0 auto; padding: clamp(16px, 4vw, 48px); }
+  h1, h2, h3, p { margin: 0; }
+  h1 { font-size: clamp(25px, 5vw, 38px); letter-spacing: -.03em; }
+  h2 { font-size: 1.2rem; }
+  button, input, select { font: inherit; }
+  button, select { border: 1px solid #b8b7ad; border-radius: 8px; background: white; color: inherit; padding: 6px 10px; }
+  button, summary, select { cursor: pointer; }
+  a { color: #28524b; }
+  :focus-visible { outline: 2px solid #156e64; outline-offset: 3px; }
+  .muted { color: #5c6059; margin-block: 6px 16px; }
+  .index { margin-block: 18px 8px; }
+  .section { border-block-start: 1px solid #dbdad1; margin-block-start: 24px; padding-block-start: 18px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 270px), 1fr)); gap: 16px; margin-block-start: 12px; }
+  .tile { min-width: 0; border: 1px solid #dfded5; border-radius: 12px; padding: 12px; background: #fbfaf7; }
+  .tile-heading, .tools { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .tile-heading { justify-content: space-between; margin-block-end: 10px; }
+  .tile-heading h3 { font-size: .92rem; }
+  .tile-heading button { margin-inline-start: auto; font-size: .84rem; }
+  .tools { margin-block: 12px; }
+  .device { background: #fff; --product-ink: #1d2825; --product-accent: #20594e; color: var(--product-ink);
+    border: 1px solid #d8dcd6; border-radius: 10px; overflow: auto; max-height: min(460px, 72vh); min-height: min(270px, 65vh); }
+  #live-device { max-width: 560px; }
+  .app-bar { padding: 12px 16px; background: #eef4ef; border-bottom: 1px solid #dce4dd; }
+  .app-content { padding: 16px; display: grid; gap: 12px; justify-items: start; }
+  .app-content h3 { font-size: 1.1rem; }
+  .app-content ul { margin: 0; padding-inline-start: 22px; overflow-wrap: anywhere; }
+  .app-content input { display: block; width: 100%; border: 1px solid #929d94; border-radius: 7px; padding: 6px 8px; }
+  .app-content form { width: 100%; display: grid; gap: 12px; }
+  .app-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .primary { background: var(--product-accent); color: white; border-color: transparent; }
+  .notice { padding: 5px 8px; background: #f4f4ef; border-radius: 6px; }
+  .annotated { outline: 2px solid #aa670a; outline-offset: 2px; }
+  #note { position: fixed; z-index: 20; width: min(336px, calc(100vw - 16px));
+    overflow: auto; overflow-wrap: anywhere; border: 1px solid #d5ac71; border-radius: 8px;
+    background: #fff3dc; padding: 12px 14px; font-size: .875rem; }
+  .note-heading { display: flex; justify-content: space-between; align-items: baseline;
+    flex-wrap: wrap; gap: 4px 12px; }
+  .note-heading strong { font-size: .9375rem; }
+  .note-scope { margin-inline-start: auto; color: #74501f; font-size: .8125rem; }
+  .note-rules { margin: 7px 0 0; padding-inline-start: 1.25em; }
+  .note-rules li + li { margin-block-start: 4px; }
+  #note.inline-note { position: static; width: auto; max-height: 140px; margin-block-start: 8px; }
+  #touch-notes { display: none; }
+  @media (any-pointer: coarse), (hover: none) { #touch-notes { display: inline-block; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>创建条目</h1>
+  <p class="muted">原型使用本地模拟数据。刷新文件将清除演示操作。</p>
+  <button id="touch-notes" type="button" aria-pressed="false">点读旁注</button>
+  <section id="board" aria-label="全貌">
+    <details class="index"><summary>页面与状态索引</summary><ul id="index"></ul></details>
+    <div id="artboards"></div>
+  </section>
+  <section id="experience" aria-label="连续体验" hidden>
+    <div class="tools">
+      <button id="return-board" type="button">返回全貌</button>
+      <label>场景 <select id="scene-select"></select></label>
+      <button id="reset" type="button">重置场景</button>
+      <button id="finish-loading" type="button" hidden>完成模拟加载</button>
+    </div>
+    <div id="live-device"></div>
+  </section>
+</main>
+<div id="note" role="tooltip" hidden>
+  <div class="note-heading">
+    <strong class="note-title"></strong>
+    <span class="note-scope" hidden></span>
+  </div>
+  <ul class="note-rules"></ul>
+</div>
+
+<template id="device-template">
+  <div class="device">
+    <header class="app-bar">条目管理</header>
+    <div class="app-content"></div>
+  </div>
+</template>
+<template id="form-template">
+  <form>
+    <label data-note="name">名称 <input name="name" required maxlength="30" autocomplete="off"></label>
+    <p class="notice" role="alert" hidden>请输入有效名称。</p>
+    <div class="app-actions">
+      <button type="button" data-action="back">取消</button>
+      <button class="primary" type="submit" data-note="save">保存</button>
+    </div>
+  </form>
+</template>
+<script>
+'use strict';
+
+const groups = [
+  { title: '1. 打开条目列表', scenes: [
+    { id: 'list-ready', title: '有数据', page: 'list', status: 'ready', items: ['示例条目'] },
+    { id: 'list-empty', title: '空数据', page: 'list', status: 'empty', items: [] },
+    { id: 'list-error', title: '加载失败', page: 'list', status: 'error', items: [] },
+    { id: 'list-loading', title: '加载中', page: 'list', status: 'loading', items: [] },
+  ] },
+  { title: '2. 填写条目信息', scenes: [
+    { id: 'create', title: '新建表单', page: 'create', status: 'ready', items: ['示例条目'] },
+  ] },
+  { title: '3. 返回列表核对结果', scenes: [
+    { id: 'created', title: '保存完成', page: 'list', status: 'ready', items: ['新条目', '示例条目'], saved: true },
+  ] },
+];
+
+const notes = {
+  list: {
+    title: '条目列表',
+    ready: [
+      '新创建的条目放在列表最上方。',
+      '名称超过一行时换行展示。',
+    ],
+    empty: [
+      '请求成功且没有条目时，显示「还没有条目」。',
+      '保留「新建条目」入口，保存后返回有数据列表。',
+    ],
+    error: [
+      '首次加载失败且没有缓存时，显示失败提示和「重试」。',
+      '点击「重试」后切到加载状态，成功后恢复列表。',
+    ],
+    loading: [
+      '首次加载或重试期间显示「正在加载…」。',
+      '等待加载结果时隐藏列表和「新建条目」入口。',
+    ],
+  },
+  create: {
+    title: '新建条目',
+    ready: [
+      '列表有数据或为空时，点击「新建条目」均可进入表单。',
+      '取消时返回进入表单前的列表状态。',
+    ],
+  },
+  name: {
+    title: '名称',
+    ready: [
+      '去掉首尾空格后必填，最多输入 30 个字符。',
+      '校验失败时保留原有输入，焦点回到名称字段。',
+    ],
+  },
+  save: {
+    title: '保存条目',
+    scope: '本地模拟',
+    ready: [
+      '校验名称通过后创建条目并返回列表。',
+      '列表显示「条目已创建」，新条目置于首项。',
+      '重置场景后恢复该场景的初始数据。',
+    ],
+  },
+  saved: {
+    title: '保存反馈',
+    ready: ['保存成功返回列表时，显示「条目已创建」。'],
+  },
+};
+
+const board = document.querySelector('#board');
+const experience = document.querySelector('#experience');
+const live = document.querySelector('#live-device');
+const sceneSelect = document.querySelector('#scene-select');
+const finishLoading = document.querySelector('#finish-loading');
+const scenes = new Map(groups.flatMap(group => group.scenes.map(scene => [scene.id, scene])));
+const titles = { list: '条目列表', create: '新建条目' };
+let model;
+let startScene;
+let boardEntry;
+let retryTimer;
+
+function element(tag, text) {
+  const node = document.createElement(tag);
+  if (text !== undefined) node.textContent = text;
+  return node;
+}
+function button(text, action, noteKey) {
+  const node = element('button', text);
+  node.type = 'button';
+  node.dataset.action = action;
+  if (noteKey) node.dataset.note = noteKey;
+  return node;
+}
+function initial(scene) {
+  return { ...scene, items: [...scene.items] };
+}
+function renderList(content, state) {
+  const list = element('div');
+  list.dataset.note = 'list';
+  if (state.status === 'ready') {
+    const rows = element('ul');
+    rows.append(...state.items.map(name => element('li', name)));
+    list.append(rows);
+  } else {
+    const message = { empty: '还没有条目', error: '列表加载失败', loading: '正在加载…' }[state.status];
+    list.append(element('p', message));
+  }
+  if (state.saved) {
+    const notice = element('p', '条目已创建');
+    notice.className = 'notice';
+    notice.role = 'status';
+    notice.dataset.note = 'saved';
+    content.append(notice);
+  }
+  content.append(list);
+  if (state.status === 'error') content.append(button('重试', 'retry', 'list'));
+  if (['ready', 'empty'].includes(state.status)) {
+    const create = button('新建条目', 'create', 'create');
+    create.className = 'primary';
+    content.append(create);
+  }
+}
+function renderDevice(state, snapshot = false) {
+  const device = document.querySelector('#device-template').content.firstElementChild.cloneNode(true);
+  device.dataset.status = state.status;
+  const content = device.querySelector('.app-content');
+  const title = element('h3', titles[state.page]);
+  title.tabIndex = -1;
+  content.append(title);
+  if (state.page === 'list') renderList(content, state);
+  else content.append(document.querySelector('#form-template').content.cloneNode(true));
+  for (const target of device.querySelectorAll('[data-note]')) {
+    if (target.tabIndex < 0 && !target.querySelector('input')) target.tabIndex = 0;
+  }
+  if (snapshot) {
+    const input = device.querySelector('input');
+    if (input) input.readOnly = true;
+  }
+  return device;
+}
+function paintBoard() {
+  for (const group of groups) {
+    const section = element('section');
+    section.className = 'section';
+    section.append(element('h2', group.title));
+    const grid = element('div');
+    grid.className = 'grid';
+    for (const scene of group.scenes) {
+      const tile = element('article');
+      tile.className = 'tile';
+      tile.id = scene.id;
+      const heading = element('div');
+      heading.className = 'tile-heading';
+      const enter = button('进入体验', 'enter');
+      enter.setAttribute('aria-label', '进入体验：' + scene.title);
+      enter.addEventListener('click', () => {
+        boardEntry = enter;
+        openScene(scene.id);
+      });
+      heading.append(element('h3', scene.title), enter);
+      tile.append(heading, renderDevice(initial(scene), true));
+      grid.append(tile);
+
+      const link = element('a', group.title + ' · ' + scene.title);
+      link.href = '#' + scene.id;
+      const item = element('li');
+      item.append(link);
+      document.querySelector('#index').append(item);
+      sceneSelect.add(new Option(scene.title, scene.id));
+    }
+    section.append(grid);
+    document.querySelector('#artboards').append(section);
+  }
+}
+function renderLive() {
+  closeNote();
+  live.replaceChildren(renderDevice(model));
+  finishLoading.hidden = model.status !== 'loading';
+  live.querySelector('h3').focus();
+}
+function openScene(id) {
+  clearTimeout(retryTimer);
+  startScene = id;
+  sceneSelect.value = id;
+  model = initial(scenes.get(id));
+  board.hidden = true;
+  experience.hidden = false;
+  renderLive();
+}
+function completeLoading() {
+  clearTimeout(retryTimer);
+  model.items = ['示例条目'];
+  model.status = 'ready';
+  renderLive();
+}
+
+document.querySelector('#return-board').addEventListener('click', () => {
+  clearTimeout(retryTimer);
+  closeNote();
+  experience.hidden = true;
+  board.hidden = false;
+  boardEntry.focus();
+});
+sceneSelect.addEventListener('change', () => openScene(sceneSelect.value));
+document.querySelector('#reset').addEventListener('click', () => openScene(startScene));
+finishLoading.addEventListener('click', completeLoading);
+
+live.addEventListener('click', event => {
+  if (event.defaultPrevented) return;
+  const action = event.target.closest('[data-action]')?.dataset.action;
+  if (action === 'create' || action === 'back') {
+    model.page = action === 'create' ? 'create' : 'list';
+    model.saved = false;
+    renderLive();
+  }
+  if (action === 'retry') {
+    model.status = 'loading';
+    renderLive();
+    retryTimer = setTimeout(completeLoading, 700);
+  }
+});
+document.addEventListener('submit', event => {
+  event.preventDefault();
+  if (!live.contains(event.target)) return;
+  const name = event.target.elements.name.value.trim();
+  if (!name) {
+    event.target.querySelector('[role="alert"]').hidden = false;
+    event.target.elements.name.focus();
+    return;
+  }
+  model.items.unshift(name);
+  Object.assign(model, { page: 'list', status: 'ready', saved: true });
+  renderLive();
+});
+
+const bubble = document.querySelector('#note');
+const touchButton = document.querySelector('#touch-notes');
+let anchor;
+let describedControl;
+let focusAnchor;
+let hideTimer;
+
+function noteTarget(target) {
+  return target instanceof Element ? target.closest('.device [data-note]') : null;
+}
+function closeNote() {
+  clearTimeout(hideTimer);
+  if (anchor) {
+    anchor.classList.remove('annotated');
+  }
+  if (describedControl) {
+    const ids = (describedControl.getAttribute('aria-describedby') || '').split(/\s+/)
+      .filter(id => id && id !== bubble.id);
+    if (ids.length) describedControl.setAttribute('aria-describedby', ids.join(' '));
+    else describedControl.removeAttribute('aria-describedby');
+  }
+  describedControl = null;
+  anchor = null;
+  bubble.hidden = true;
+  if (bubble.classList.contains('inline-note')) {
+    bubble.classList.remove('inline-note');
+    document.body.append(bubble);
+  }
+}
+function positionNote() {
+  if (!anchor) return;
+  const rect = anchor.getBoundingClientRect();
+  const device = anchor.closest('.device');
+  const frame = device.getBoundingClientRect();
+  const pad = 8;
+  const gap = 10;
+  const top = Math.max(rect.top, frame.top, pad);
+  const bottom = Math.min(rect.bottom, frame.bottom, innerHeight - pad);
+  const left = Math.max(rect.left, frame.left, pad);
+  const right = Math.min(rect.right, frame.right, innerWidth - pad);
+  if (top >= bottom || left >= right) return closeNote();
+  if (bubble.classList.contains('inline-note')) return;
+
+  const width = bubble.offsetWidth;
+  const aligned = Math.max(pad, Math.min(left, innerWidth - pad - width));
+  const candidates = [
+    { x: right + gap, start: top, end: innerHeight - pad },
+    { x: left - gap - width, start: top, end: innerHeight - pad },
+    { x: aligned, start: bottom + gap, end: innerHeight - pad },
+    { x: aligned, start: pad, end: top - gap, alignEnd: true },
+  ].filter(slot => slot.x >= pad && slot.x + width <= innerWidth - pad && slot.end > slot.start);
+  const scope = device.closest('.tile') || experience;
+  const controls = [...scope.querySelectorAll('button, input, select')]
+    .filter(control => !anchor.contains(control) && !control.hidden)
+    .map(control => control.getBoundingClientRect());
+  for (const slot of candidates) {
+    for (const control of controls) {
+      if (!control.width || !control.height || control.left >= slot.x + width || control.right <= slot.x
+          || control.bottom <= slot.start || control.top >= slot.end) continue;
+      if (slot.alignEnd) slot.start = Math.max(slot.start, control.bottom + pad);
+      else slot.end = Math.min(slot.end, control.top - pad);
+    }
+  }
+  bubble.style.maxHeight = '';
+  const naturalHeight = bubble.offsetHeight;
+  const available = slot => slot.end - slot.start;
+  const slot = candidates.find(candidate => available(candidate) >= naturalHeight)
+    || candidates.sort((a, b) => available(b) - available(a))[0];
+  if (!slot || available(slot) < 32) {
+    bubble.classList.add('inline-note');
+    device.after(bubble);
+    return;
+  }
+  bubble.style.maxHeight = available(slot) + 'px';
+  bubble.style.left = slot.x + 'px';
+  bubble.style.top = (slot.alignEnd ? slot.end - bubble.offsetHeight : slot.start) + 'px';
+}
+function showNote(target) {
+  if (!target) return;
+  clearTimeout(hideTimer);
+  if (target === anchor) return;
+  const rule = notes[target.dataset.note];
+  const items = rule?.[target.closest('.device').dataset.status] ?? rule?.ready;
+  if (!items?.length) return;
+  closeNote();
+  anchor = target;
+  bubble.querySelector('.note-title').textContent = rule.title;
+  const scope = bubble.querySelector('.note-scope');
+  scope.textContent = rule.scope ?? '';
+  scope.hidden = !rule.scope;
+  bubble.querySelector('.note-rules').replaceChildren(...items.map(item => element('li', item)));
+  bubble.hidden = false;
+  anchor.classList.add('annotated');
+  describedControl = anchor.querySelector('input') || anchor;
+  const description = describedControl.getAttribute('aria-describedby');
+  describedControl.setAttribute('aria-describedby', description ? description + ' ' + bubble.id : bubble.id);
+  positionNote();
+}
+function delayClose() {
+  clearTimeout(hideTimer);
+  hideTimer = setTimeout(closeNote, 160);
+}
+document.addEventListener('pointerover', event => {
+  if (event.pointerType === 'touch') return;
+  if (bubble.contains(event.target)) return clearTimeout(hideTimer);
+  showNote(noteTarget(event.target));
+});
+document.addEventListener('pointerout', event => {
+  if (event.pointerType === 'touch') return;
+  if (!bubble.contains(event.target) && noteTarget(event.target) !== anchor) return;
+  if (bubble.contains(event.relatedTarget) || noteTarget(event.relatedTarget) === anchor || anchor === focusAnchor) return;
+  delayClose();
+});
+document.addEventListener('focusin', event => {
+  focusAnchor = noteTarget(event.target);
+  if (focusAnchor && event.target.matches(':focus-visible')) showNote(focusAnchor);
+  else focusAnchor = null;
+});
+document.addEventListener('focusout', () => {
+  if (anchor && anchor === focusAnchor) closeNote();
+  focusAnchor = null;
+});
+document.addEventListener('keydown', event => {
+  if (event.key === 'Escape' && anchor) closeNote();
+});
+touchButton.addEventListener('click', () => {
+  touchButton.setAttribute('aria-pressed', String(touchButton.getAttribute('aria-pressed') !== 'true'));
+  closeNote();
+});
+document.addEventListener('click', event => {
+  if (touchButton.getAttribute('aria-pressed') !== 'true' || touchButton.contains(event.target)) return;
+  if (!event.target.closest('.device')) return closeNote();
+  event.preventDefault();
+  event.stopPropagation();
+  const target = noteTarget(event.target);
+  if (target && target !== anchor) showNote(target);
+  else closeNote();
+}, true);
+window.addEventListener('scroll', positionNote, true);
+window.addEventListener('resize', positionNote);
+paintBoard();
+</script>
+</body>
+</html>

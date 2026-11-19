@@ -69,7 +69,7 @@ for (const file of ['agents/prototype-review.md', 'agents/prototype-review.toml'
   assert(!text.includes('末尾使用“可交付'));
 }
 const init = await readFile(new URL('../skills/pmspec-init/SKILL.md', import.meta.url), 'utf8');
-for (const text of ['六个评分维度及满分', '不评分', '未启动或无响应如实记录']) assert(init.includes(text));
+for (const text of ['六个评分维度及满分', '无需评分', '未实际收到结果时标待验证', '/pmspec-review --check', '$pmspec-review --check']) assert(init.includes(text));
 const temporary = await mkdtemp(join(tmpdir(), 'pmspec-review-'));
 try {
   const file = join(temporary, 'review.md');

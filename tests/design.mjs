@@ -35,11 +35,9 @@ for (const filename of ['DESIGN.md', 'foundations.md', 'components.md', 'pattern
   assert(template.includes('模板'), `模板存在且声明填写用途：${filename}`);
   assert(template.includes('来源'), `模板可追溯：${filename}`);
 }
-for (const path of ['skills/pmspec-apply/agents/prototype-review.md', 'skills/pmspec-apply/agents/prototype-review.toml', 'skills/pmspec-apply/references/review-checklist.md']) {
-  const text = await read(path);
-  for (const fragment of ['设计入口', '来源版本', '采用状态', '待确认建议', '不据此扣分']) {
-    assert(text.includes(fragment), `生成/审核采用边界一致：${path}/${fragment}`);
-  }
+const checklist = await read('skills/pmspec-apply/references/review-checklist.md');
+for (const fragment of ['设计入口', '来源版本', '采用状态', '待确认建议', '不据此扣分']) {
+  assert(checklist.includes(fragment), `共享审核规则保留设计采用边界：${fragment}`);
 }
 
 // 默认说明的 token 表必须完整匹配真实主题，不允许新增无依据色值。

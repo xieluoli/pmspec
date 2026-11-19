@@ -26,11 +26,13 @@ for (const file of files.filter((path) => extname(path) === '.md')) {
   }
   assert(!content.includes('/Users/'), `私有机器路径：${file}`);
 }
-const skillNames = ['pmspec-init', 'pmspec-explore', 'pmspec-propose', 'pmspec-apply', 'pmspec-review'];
+const skillNames = ['pmspec-init', 'pmspec-explore', 'pmspec-propose', 'pmspec-apply-artifacts', 'pmspec-apply', 'pmspec-review'];
 for (const skillName of skillNames) {
   const content = await readFile(join(root, 'skills', skillName, 'SKILL.md'), 'utf8');
   assert(content.startsWith(`---\nname: ${skillName}\n`), skillName);
-  assert(content.includes('disable-model-invocation: true'), '不得自动推进阶段');
+  assert(content.includes('disable-model-invocation: true'), 'Claude Code 不得自动推进阶段');
+  const codexPolicy = await readFile(join(root, 'skills', skillName, 'agents/openai.yaml'), 'utf8');
+  assert.match(codexPolicy, /^policy:\n  allow_implicit_invocation: false\s*$/, 'Codex 不得自动推进阶段');
   assert(content.includes('$ARGUMENTS') || skillName === 'pmspec-init', '必须声明输入');
 }
 const applyRoot = join(root, 'skills/pmspec-apply');
@@ -53,15 +55,17 @@ const reviewerToml = await readFile(join(applyRoot, 'agents/prototype-review.tom
 // 当前 TOML 的开发者指令使用单行双引号字符串，与 JSON 转义兼容。
 const reviewerInstructions = JSON.parse(reviewerToml.match(/^developer_instructions = (.+)$/m)[1]);
 for (const content of [reviewer, reviewerInstructions]) {
-  for (const text of ['references/design-context.md', 'references/review-checklist.md', '设计依据与本次批准范围', '复用映射', '当前证据版本', '全局批准', '真实 APP/后端未运行不自动阻塞']) {
-    assert(content.includes(text), `两种宿主审核输入一致：${text}`);
-  }
+  assert(content.includes('references/review-checklist.md'), '两种宿主审核使用同一清单');
 }
 assert(reviewer.includes('tools: Read, Glob, Grep'), 'Claude 审核仍为只读工具白名单');
 assert(reviewerInstructions.includes('不宣称有独立只读沙箱'), 'Codex 不扩大权限承诺');
-for (const skillName of ['pmspec-propose', 'pmspec-apply']) {
+for (const skillName of ['pmspec-propose', 'pmspec-apply-artifacts', 'pmspec-apply', 'pmspec-review']) {
   const content = await readFile(join(root, 'skills', skillName, 'SKILL.md'), 'utf8');
-  assert(content.includes('需求根目录'), 'Propose/Apply 沿用项目路径');
+  assert(content.includes('references/requirement.md'), '各阶段使用同一需求定位、批准和状态规则');
+}
+const propose = await readFile(join(root, 'skills/pmspec-propose/SKILL.md'), 'utf8');
+for (const prefix of ['/', '$']) {
+  assert(propose.includes(`${prefix}pmspec-apply-artifacts 需求名`), '批准提案后的默认入口须指向 Artifacts');
 }
 console.info('通过：设计交接文本契约（默认主题 / 既有规范 / 局部批准）、双宿主审核定义与项目路径');
 const script = join(applyRoot, 'scripts/embed-assets.mjs');
@@ -69,17 +73,25 @@ for (const filename of ['prototype.js', '../scripts/embed-assets.mjs']) {
   const result = spawnSync(process.execPath, ['--check', join(applyRoot, 'assets', filename)], { encoding: 'utf8' });
   assert.equal(result.status, 0, result.stderr);
 }
-for (const filename of ['example.html', 'template.html']) {
-  const html = await readFile(join(applyRoot, 'assets', filename), 'utf8');
+const artifactsExample = join(root, 'skills/pmspec-apply-artifacts/assets/example.html');
+for (const path of [join(applyRoot, 'assets/example.html'), join(applyRoot, 'assets/template.html'), artifactsExample]) {
+  const html = await readFile(path, 'utf8');
   assert(!/<(?:script|img|iframe)[^>]+src=["'](?!data:)/i.test(html), '不得有外部资源');
   assert(!/<link[^>]+href=["'](?!data:)/i.test(html), '不得有外部样式/字体');
   assert(!/@import|url\(\s*["']?(?:https?:|file:)/i.test(html), '不得有远端CSS依赖');
   const ids = [...html.matchAll(/\bid="([^"]+)"/g)].map((match) => match[1]);
   assert.equal(new Set(ids).size, ids.length, '重复ID');
   for (const match of html.matchAll(/href="#([^"]+)"/g)) assert(ids.includes(match[1]), `无效锚点：${match[1]}`);
+  if (path === artifactsExample) {
+    const scripts = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)];
+    assert.equal(scripts.length, 1, 'Artifacts 样板应包含内嵌脚本');
+    const syntax = spawnSync(process.execPath, ['--check'], { input: scripts[0][1], encoding: 'utf8' });
+    assert.equal(syntax.status, 0, syntax.stderr);
+    continue;
+  }
   for (const [name, asset, tag] of [['theme', 'theme.css', 'style'], ['shared', 'shared.css', 'style'], ['runtime', 'prototype.js', 'script']]) {
     const content = (await readFile(join(applyRoot, 'assets', asset), 'utf8')).trim();
-    assert(html.includes(`<!-- @pmspec:${name}:start -->\n<${tag}>\n${content}\n</${tag}>\n<!-- @pmspec:${name}:end -->`), `内嵌资产未同步：${filename}/${name}`);
+    assert(html.includes(`<!-- @pmspec:${name}:start -->\n<${tag}>\n${content}\n</${tag}>\n<!-- @pmspec:${name}:end -->`), `内嵌资产未同步：${path}/${name}`);
   }
 }
 const temporary = await mkdtemp(join(tmpdir(), 'pmspec-test-'));
@@ -116,4 +128,4 @@ console.info(incremental.stdout.trim());
 const initialization = spawnSync(process.execPath, [join(root, 'tests/init.mjs')], { encoding: 'utf8' });
 assert.equal(initialization.status, 0, initialization.stderr);
 console.info(initialization.stdout.trim());
-console.info(`通过：5 个技能、${linkCount} 个内部链接、脚本语法、2 个自包含 HTML、内嵌一致性与幂等/拒绝错误输入`);
+console.info(`通过：${skillNames.length} 个技能、${linkCount} 个内部链接、脚本语法、3 个自包含 HTML、内嵌一致性与幂等/拒绝错误输入`);

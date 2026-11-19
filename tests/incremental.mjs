@@ -91,15 +91,10 @@ try {
 
 const rules = await read('skills/pmspec-apply/references/incremental-review.md');
 for (const text of ['无可靠基线', '完整差异', '共享依赖', '不能沿用旧分数', '全部 15 项', '关键流程冒烟', '纯文案也不默认免除独立审核', '退全量', '逐条复核', '原始证据']) assert(rules.includes(text), text);
-for (const path of ['SKILL.md', 'references/runtime.md', 'references/design-context.md', 'references/review-checklist.md', 'agents/prototype-review.md', 'agents/prototype-review.toml']) {
-  assert((await read(`skills/pmspec-apply/${path}`)).includes('incremental-review.md'), `增量规则入口：${path}`);
-}
-const markdown = await read('skills/pmspec-apply/agents/prototype-review.md');
-const toml = await read('skills/pmspec-apply/agents/prototype-review.toml');
-const instructions = JSON.parse(toml.match(/^developer_instructions = (.+)$/m)[1]);
-for (const text of ['不得复制旧分数', '无可靠基线', '全部检查项', '跳过 base64', '完整差异', '共享依赖', '关键流程冒烟']) {
-  assert(markdown.includes(text) && instructions.includes(text), `双宿主契约：${text}`);
-}
+for (const path of [
+  'pmspec-apply/SKILL.md', 'pmspec-apply/references/runtime.md', 'pmspec-apply/references/design-context.md',
+  'pmspec-apply/references/review-checklist.md', 'pmspec-apply-artifacts/SKILL.md', 'pmspec-review/SKILL.md',
+]) assert((await read(`skills/${path}`)).includes('incremental-review.md'), `增量规则入口：${path}`);
 for (const path of ['preview.mjs', 'inspect-html.mjs', 'browser-checks.js']) {
   const syntax = spawnSync(process.execPath, ['--check', new URL(`skills/pmspec-apply/scripts/${path}`, root).pathname], { encoding: 'utf8' });
   assert.equal(syntax.status, 0, syntax.stderr);

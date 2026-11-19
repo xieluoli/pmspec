@@ -19,7 +19,7 @@ if (!['claude', 'codex'].includes(options.host) || !options.workspace) {
 }
 const workspace = resolve(options.workspace);
 const skillsRoot = fileURLToPath(new URL('../../', import.meta.url));
-const skillNames = ['pmspec-init', 'pmspec-explore', 'pmspec-propose', 'pmspec-apply', 'pmspec-review'];
+const skillNames = ['pmspec-init', 'pmspec-explore', 'pmspec-propose', 'pmspec-apply-artifacts', 'pmspec-apply', 'pmspec-review'];
 const skillDirectory = options.host === 'claude' ? '.claude/skills' : '.agents/skills';
 const agentSource = join(skillsRoot, 'pmspec-apply/agents', options.host === 'claude' ? 'prototype-review.md' : 'prototype-review.toml');
 const agentTarget = join(workspace, options.host === 'claude' ? '.claude/agents/prototype-review.md' : '.codex/agents/prototype-review.toml');
@@ -36,6 +36,7 @@ async function assertDirectories(path) {
 await assertDirectories(workspace);
 await access(workspace, constants.W_OK);
 const requiredFiles = [
+  ...skillNames.flatMap((name) => [`${name}/SKILL.md`, `${name}/agents/openai.yaml`]),
   'pmspec-init/scripts/install.mjs',
   'pmspec-init/references/design-system.md',
   'pmspec-init/templates/design/DESIGN.md',
@@ -43,7 +44,12 @@ const requiredFiles = [
   'pmspec-init/templates/design/components.md',
   'pmspec-init/templates/design/patterns.md',
   'pmspec-init/templates/design/brand.md',
+  'pmspec-explore/references/readiness.md',
+  'pmspec-propose/references/requirement.md',
   'pmspec-propose/templates/proposal.md',
+  'pmspec-apply-artifacts/assets/example.html',
+  'pmspec-apply-artifacts/references/board.md',
+  'pmspec-apply-artifacts/references/annotations.md',
   'pmspec-apply/agents/prototype-review.md',
   'pmspec-apply/agents/prototype-review.toml',
   'pmspec-apply/assets/example.html',
@@ -51,18 +57,24 @@ const requiredFiles = [
   'pmspec-apply/assets/theme.css',
   'pmspec-apply/assets/shared.css',
   'pmspec-apply/assets/prototype.js',
+  'pmspec-apply/scripts/browser-checks.js',
+  'pmspec-apply/scripts/check-review.mjs',
   'pmspec-apply/scripts/embed-assets.mjs',
+  'pmspec-apply/scripts/inspect-html.mjs',
+  'pmspec-apply/scripts/preview.mjs',
   'pmspec-apply/references/runtime.md',
   'pmspec-apply/references/design-context.md',
   'pmspec-apply/references/delivery.md',
+  'pmspec-apply/references/incremental-review.md',
   'pmspec-apply/references/default-design.md',
   'pmspec-apply/references/prototype.md',
   'pmspec-apply/references/annotations.md',
   'pmspec-apply/references/review-checklist.md',
+  'pmspec-apply/references/verification-harness.md',
 ];
 for (const requiredFile of requiredFiles) {
-  const sourceStat = await lstat(join(skillsRoot, requiredFile));
-  if (!sourceStat.isFile() || sourceStat.isSymbolicLink()) throw new Error(`来源不完整：${requiredFile}`);
+  const sourceStat = await statIfPresent(join(skillsRoot, requiredFile));
+  if (!sourceStat?.isFile() || sourceStat.isSymbolicLink()) throw new Error(`来源不完整：${requiredFile}`);
 }
 const copies = [];
 const missingDirectories = new Set();
@@ -87,7 +99,6 @@ async function compare(source, target) {
   }
 }
 for (const skillName of skillNames) {
-  await access(join(skillsRoot, skillName, 'SKILL.md'));
   const target = join(workspace, skillDirectory, skillName);
   await assertDirectories(dirname(target));
   await compare(join(skillsRoot, skillName), target);
